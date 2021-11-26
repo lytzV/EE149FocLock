@@ -155,3 +155,25 @@ typedef enum {
 } tsl2561Gain_t;
 
 #endif // ADAFRUIT_TSL2561_H
+
+// provide twi_mngr instance to driver
+// i2c: const pointer to nrf_twi_mngr_t instance
+void tsl2561_init(const nrf_twi_mngr_t* i2c);
+
+// configure tsl2561 with settings from config struct
+// config: config struct
+// returns error code
+ret_code_t tsl2561_config(opt3004_config_t config);
+
+// Set tsl2561 to sample continuously
+void tsl2561_continuous();
+
+// Set tsl2561 to sample a single measurement
+void tsl2561_single_shot();
+
+// Set tsl2561 to shutdown mode
+void tsl2561_shutdown();
+
+// Read lux value from sensor
+// returns floating point lux value
+float tsl2561_read_result();

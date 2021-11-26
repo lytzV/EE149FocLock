@@ -17,6 +17,7 @@
 
 #include "buckler.h"
 #include "sensor.h"
+#include "nrf_twi_mngr.h"
 
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
@@ -38,7 +39,6 @@ int main(void) {
   i2c_config.frequency = NRF_TWIM_FREQ_100K;
   error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
   APP_ERROR_CHECK(error_code); 
-  static const nrf_twi_mngr_t* i2c_manager = NULL; 
 
   // initialize tsl2561 driver
   tsl2561_init(&twi_mngr_instance);
@@ -50,11 +50,7 @@ int main(void) {
   	// Fetch button value
   	// printf("SWITCH0: Value: %d\t Address in pin: %lx\n", (pins->IN >> 22) & 1U, &(pins->PIN_CNF[22]));
   	// printf("BUTTON0: Value: %d\t Value in pin: %d\n", (pins->IN >> 28) & 1U, pins->PIN_CNF[28]);
-  	
-  	gpio_write(23, gpio_read(28));
-  	gpio_write(24, gpio_read(22));
-
-    printf("Current reading: %s\n", twi_receive());
+    printf("Current Lux: %s\n", tsl2561_get_data());
 
   	nrf_delay_ms(100);
   }
