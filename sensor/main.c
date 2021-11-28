@@ -39,15 +39,20 @@ int main(void) {
   i2c_config.frequency = NRF_TWIM_FREQ_100K;
   error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
   APP_ERROR_CHECK(error_code); 
+  printf("going to initialize!\n");
 
   // initialize tsl2561 driver
   tsl2561_init(&twi_mngr_instance);
   error_code = tsl2561_config();
+  printf("initialized!\n");
   APP_ERROR_CHECK(error_code);
 
   // loop forever
   while (1) {
-    printf("Current reading of float sensor: %x\n high sensor: %x\n", tsl2561_read_result(TSL2561_ADDR_FLOAT), tsl2561_read_result(TSL2561_ADDR_HIGH));
+    printf("In the loop\n");
+    printf("Debug reading: %x\n", print_debug());
+    // printf("Current reading of float sensor: %x\n high sensor: %x\n", tsl2561_read_result(TSL2561_ADDR_FLOAT), tsl2561_read_result(TSL2561_ADDR_HIGH));
+    printf("Current reading of float sensor: %d\n", tsl2561_read_result(TSL2561_ADDR_FLOAT));
 
   	nrf_delay_ms(500);
   }

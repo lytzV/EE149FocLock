@@ -5,7 +5,7 @@
 #include "app_error.h"
 
 static uint8_t TSL2561_ADDRESS = TSL2561_ADDR_FLOAT;
-static uint8_t tsl2561IntegrationTime = TSL2561_INTEGRATIONTIME_13MS;
+static uint8_t tsl2561IntegrationTime = TSL2561_INTEGRATIONTIME_402MS;
 static uint8_t tsl2561Gain = TSL2561_GAIN_1X;
 
 static const nrf_twi_mngr_t* twi_mngr; 
@@ -41,26 +41,26 @@ void tsl2561_init(const nrf_twi_mngr_t* twi) {
 
 ret_code_t tsl2561_config() {
     tsl2561_write_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
-    tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
+    // tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
     return NRF_SUCCESS; 
 }
 
 void tsl2561_shutdown() {
     tsl2561_write_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWEROFF);
-    tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWEROFF);
+    // tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWEROFF);
 }
 
 uint16_t print_debug() {
-    return tsl2561_read_reg(TSL2561_ADDRESS, 0x0A);
+    return tsl2561_read_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_HIGH));
 }
 
-float tsl2561_read_result(uint8_t addr) {
+uint32_t tsl2561_read_result(uint8_t addr) {
     // busy loop until result ready
     // return tsl2561_read_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_HIGH));
     while(!(tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW)))) {}
     // read result register
-    uint16_t broadband = tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW));
-    uint16_t ir = tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN1_LOW));
+    uint32_t broadband = (tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_HIGH)) << 8) | tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW));
+    uint32_t ir = (tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN1_HIGH)) << 8) | tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN1_LOW));
 
     unsigned long chScale;
     unsigned long channel1;
