@@ -16,7 +16,6 @@
 #include "nrf_serial.h"
 
 #include "buckler.h"
-#include "sensor.h"
 #include "nrf_twi_mngr.h"
 
 // I2C manager
