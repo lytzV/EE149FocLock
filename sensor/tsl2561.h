@@ -165,12 +165,6 @@ void tsl2561_init(const nrf_twi_mngr_t* i2c);
 // returns error code
 ret_code_t tsl2561_config(opt3004_config_t config);
 
-// Set tsl2561 to sample continuously
-void tsl2561_continuous();
-
-// Set tsl2561 to sample a single measurement
-void tsl2561_single_shot();
-
 // Set tsl2561 to shutdown mode
 void tsl2561_shutdown();
 

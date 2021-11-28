@@ -37,44 +37,46 @@ void tsl2561_init(const nrf_twi_mngr_t* twi) {
 }
 
 ret_code_t tsl2561_config() {
-    *(TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL) = TSL2561_CONTROL_POWERON;
-
+    uint16_t config_reg = tsl2561_read_reg(TSL2561_ADDRESS, TSL2561_REGISTER_CONTROL);
+    config_reg = TSL2561_CONTROL_POWERON
+    opt3004_write_reg(TSL2561_ADDRESS, TSL2561_REGISTER_CONTROL, config_reg);
     return NRF_SUCCESS; 
 }
 
-void tsl2561_continuous() {
-  uint16_t config_reg = tsl2561_read_reg(TSL2561_ADDRESS, OPT3004_CONFIG_REG);
-  printf("config_reg: %x\n", config_reg);
-  config_reg &= ~(0x3 << OPT3004_CONFIG_M_SHIFT);
-  printf("config_reg clear: %x\n", config_reg);
-  config_reg |= (0x2 << OPT3004_CONFIG_M_SHIFT);
-  printf("config_reg wrote: %x\n", config_reg);
-  tsl2561_write_reg(TSL2561_ADDRESS, OPT3004_CONFIG_REG, config_reg);
-}
-
-void tsl2561_single_shot() {
-  uint16_t config_reg = tsl2561_read_reg(TSL2561_ADDRESS, OPT3004_CONFIG_REG);
-  config_reg |= (0x1 << OPT3004_CONFIG_M_SHIFT);
-  opt3004_write_reg(TSL2561_ADDRESS, OPT3004_CONFIG_REG, config_reg);
-}
-
 void tsl2561_shutdown() {
-  uint16_t config_reg = tsl2561_read_reg(TSL2561_ADDRESS, OPT3004_CONFIG_REG);
-  config_reg &= ~(0x11 << OPT3004_CONFIG_M_SHIFT);
-  opt3004_write_reg(TSL2561_ADDRESS, OPT3004_CONFIG_RN_SHIFT, config_reg);
+  uint16_t config_reg = tsl2561_read_reg(TSL2561_ADDRESS, TSL2561_REGISTER_CONTROL);
+  config_reg = TSL2561_CONTROL_POWEROFF;
+  opt3004_write_reg(TSL2561_ADDRESS, TSL2561_REGISTER_CONTROL, config_reg);
 }
 
 float tsl2561_read_result() {
   // busy loop until result ready
-  while(!(opt3004_read_reg(TSL2561_ADDRESS, OPT3004_CONFIG_REG) & OPT3004_CONFIG_CRF_MASK)) {}
-  // read result register
-  uint16_t result = opt3004_read_reg(TSL2561_ADDRESS, OPT3004_RESULT_REG);
+    while(!(opt3004_read_reg(TSL2561_ADDRESS, TSL2561_COMMAND_BIT) & TSL2561_REGISTER_CHAN0_LOW)) {}
+    // read result register
+    uint8_t chan0_low = opt3004_read_reg(TSL2561_ADDRESS, TSL2561_REGISTER_CHAN0_LOW);
+    uint8_t chan0_high = opt3004_read_reg(TSL2561_ADDRESS, TSL2561_REGISTER_CHAN0_HIGH);
+    uint8_t chan1_low = opt3004_read_reg(TSL2561_ADDRESS, TSL2561_REGISTER_CHAN1_LOW);
+    uint8_t chan1_high = opt3004_read_reg(TSL2561_ADDRESS, TSL2561_REGISTER_CHAN1_HIGH);
 
-  // split result into exponent and fractional components
-  uint16_t exp = (result & OPT3004_RESULT_E_MASK) >> OPT3004_RESULT_E_SHIFT;
-  uint16_t frac = (result & OPT3004_RESULT_R_MASK) >> OPT3004_RESULT_R_SHIFT;
-  float lsb = 0.01 * powf(2, exp);
-  return lsb * frac;
+    uint16_t broadband = (chan0_high << 8) | chan0_low;
+    uint16_t ir = (chan1_high << 8) | chan1_low;
+
+    channel0 = (broadband * 1) >> TSL2561_LUX_CHSCALE;
+    channel1 = (ir * 1) >> TSL2561_LUX_CHSCALE;
+
+    uint16_t temp = 0;
+    /* Do not allow negative lux value */
+    if (channel0 > channel1)
+        temp = channel0 - channel1;
+
+    /* Round lsb (2^(LUX_SCALE-1)) */
+    temp += (1 << (TSL2561_LUX_LUXSCALE - 1));
+
+    /* Strip off fractional portion */
+    uint32_t lux = temp >> TSL2561_LUX_LUXSCALE;
+
+    /* Signal I2C had no errors */
+    return lux;  
 }
 
 uint32_t* tsl2561_get_data() {

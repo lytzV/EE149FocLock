@@ -42,16 +42,13 @@ int main(void) {
 
   // initialize tsl2561 driver
   tsl2561_init(&twi_mngr_instance);
+  error_code = tsl2561_config();
+  APP_ERROR_CHECK(error_code);
 
   // loop forever
   while (1) {
-  	// Toggle LED
-  	// pins->OUT ^= 1 << 23;
-  	// Fetch button value
-  	// printf("SWITCH0: Value: %d\t Address in pin: %lx\n", (pins->IN >> 22) & 1U, &(pins->PIN_CNF[22]));
-  	// printf("BUTTON0: Value: %d\t Value in pin: %d\n", (pins->IN >> 28) & 1U, pins->PIN_CNF[28]);
-    printf("Current Lux: %s\n", tsl2561_get_data());
+    printf("Current reading: %s\n", tsl2561_read_result());
 
-  	nrf_delay_ms(100);
+  	nrf_delay_ms(500);
   }
 }
