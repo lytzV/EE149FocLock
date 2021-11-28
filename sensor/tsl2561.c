@@ -39,19 +39,26 @@ void tsl2561_init(const nrf_twi_mngr_t* twi) {
 
 ret_code_t tsl2561_config() {
     tsl2561_write_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
+    tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
     return NRF_SUCCESS; 
 }
 
 void tsl2561_shutdown() {
     tsl2561_write_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWEROFF);
+    tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWEROFF);
 }
 
-float tsl2561_read_result() {
+uint16_t print_debug() {
+    return tsl2561_read_reg(TSL2561_ADDRESS, 0x0A);
+}
+
+float tsl2561_read_result(uint8_t addr) {
     // busy loop until result ready
-    while(!(tsl2561_read_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW)))) {}
+    // return tsl2561_read_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_HIGH));
+    while(!(tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW)))) {}
     // read result register
-    uint16_t broadband = tsl2561_read_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW));
-    uint16_t ir = tsl2561_read_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN1_LOW));
+    uint16_t broadband = tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW));
+    uint16_t ir = tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN1_LOW));
 
     uint16_t channel0 = (broadband * 1) >> TSL2561_LUX_CHSCALE;
     uint16_t channel1 = (ir * 1) >> TSL2561_LUX_CHSCALE;
@@ -72,7 +79,7 @@ float tsl2561_read_result() {
 }
 
 // uint32_t* tsl2561_get_data() {
-	
+    
 //     // read 2 byte value from 2 channels 
 //     uint16_t broadband = (((uint16_t)i2c_reg_read(TSL_ADDRESS, TSL2561_COMMAND_BIT | TSL2561_REGISTER_CHAN0_HIGH)) << 8) | i2c_reg_read(TSL_ADDRESS, TSL2561_COMMAND_BIT | TSL2561_REGISTER_CHAN0_LOW);
 //     uint16_t broadband = read16(TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW);

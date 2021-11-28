@@ -17,6 +17,7 @@
 
 #include "buckler.h"
 #include "nrf_twi_mngr.h"
+#include "tsl2561.h"
 
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
@@ -46,7 +47,7 @@ int main(void) {
 
   // loop forever
   while (1) {
-    printf("Current reading: %s\n", tsl2561_read_result());
+    printf("Current reading of float sensor: %x\n high sensor: %x\n", tsl2561_read_result(TSL2561_ADDR_FLOAT), tsl2561_read_result(TSL2561_ADDR_HIGH));
 
   	nrf_delay_ms(500);
   }
