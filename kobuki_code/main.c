@@ -77,7 +77,7 @@ int main(void)
     kobukiInit();
     printf("Kobuki initialized!\n");
 
-    robot_state_t state = OFF;
+    moon_state_t state = OFF;
     // loop forever, running state machine
     while (1)
     {
