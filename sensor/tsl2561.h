@@ -1,3 +1,4 @@
+#include "nrf_twi_mngr.h"
 /*!
  * @file Adafruit_TSL2561_U.h
  *
@@ -158,18 +159,12 @@ typedef enum {
 
 // provide twi_mngr instance to driver
 // i2c: const pointer to nrf_twi_mngr_t instance
-void tsl2561_init(const nrf_twi_mngr_t* i2c);
+void tsl2561_init(const nrf_twi_mngr_t* twi);
 
 // configure tsl2561 with settings from config struct
 // config: config struct
 // returns error code
 ret_code_t tsl2561_config(opt3004_config_t config);
-
-// Set tsl2561 to sample continuously
-void tsl2561_continuous();
-
-// Set tsl2561 to sample a single measurement
-void tsl2561_single_shot();
 
 // Set tsl2561 to shutdown mode
 void tsl2561_shutdown();
