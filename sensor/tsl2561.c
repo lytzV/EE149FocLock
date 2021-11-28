@@ -163,10 +163,9 @@ float tsl2561_read_result() {
       }
     #endif
 
-    channel0 = (broadband * 1) >> TSL2561_LUX_CHSCALE;
-    channel1 = (ir * 1) >> TSL2561_LUX_CHSCALE;
-
     unsigned long temp = 0;
+    channel0 = channel0 * b;
+    channel1 = channel1 * m;
     /* Do not allow negative lux value */
     if (channel0 > channel1)
         temp = channel0 - channel1;
