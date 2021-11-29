@@ -157,9 +157,16 @@ typedef enum {
 
 #endif // ADAFRUIT_TSL2561_H
 
+// struct to keep multiple twi managers 
+typedef struct {
+  nrf_twi_mngr_t* twi_float;
+  nrf_twi_mngr_t* twi_high;
+  nrf_twi_mngr_t* twi_low;
+} twi_mngr_group;
+
 // provide twi_mngr instance to driver
 // i2c: const pointer to nrf_twi_mngr_t instance
-void tsl2561_init(const nrf_twi_mngr_t* twi);
+void tsl2561_init(const twi_mngr_group* twi);
 
 // configure tsl2561 with settings from config struct
 // config: config struct

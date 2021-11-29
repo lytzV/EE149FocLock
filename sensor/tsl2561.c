@@ -8,7 +8,8 @@ static uint8_t TSL2561_ADDRESS = TSL2561_ADDR_FLOAT;
 static uint8_t tsl2561IntegrationTime = TSL2561_INTEGRATIONTIME_402MS;
 static uint8_t tsl2561Gain = TSL2561_GAIN_1X;
 
-static const nrf_twi_mngr_t* twi_mngr; 
+static const twi_mngr_group* twi_mngr; 
+static const nrf_twi_mngr_t* curr_twi;
 
 uint16_t tsl2561_read_reg(uint8_t i2c_addr, uint8_t reg_addr) {
   uint16_t rx_buf = 0;
@@ -28,6 +29,7 @@ uint16_t tsl2561_read_reg(uint8_t i2c_addr, uint8_t reg_addr) {
 static void tsl2561_write_reg(uint8_t i2c_addr, uint8_t reg_addr, uint16_t data) {
   uint8_t * data8 = (uint8_t*) &data;
   uint8_t buf[3] = {reg_addr, data8[1], data8[0]};
+  printf("Writing to %x now\n", i2c_addr);
   nrf_twi_mngr_transfer_t const write_transfer[] = {
     NRF_TWI_MNGR_WRITE(i2c_addr, buf, 3, 0),
   };
@@ -35,19 +37,25 @@ static void tsl2561_write_reg(uint8_t i2c_addr, uint8_t reg_addr, uint16_t data)
   APP_ERROR_CHECK(error_code);
 }
 
-void tsl2561_init(const nrf_twi_mngr_t* twi) {
+void tsl2561_init(const twi_mngr_group* twi) {
     twi_mngr = twi;
 }
 
 ret_code_t tsl2561_config() {
+    curr_twi = twi_mngr->twi_float;
     tsl2561_write_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
-    // tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
+    printf("Configured floating addr\n");
+    curr_twi = twi_mngr->twi_high;
+    tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
+    printf("Configured high addr\n");
     return NRF_SUCCESS; 
 }
 
 void tsl2561_shutdown() {
+    curr_twi = twi_mngr->twi_float;
     tsl2561_write_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWEROFF);
-    // tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWEROFF);
+    curr_twi = twi_mngr->twi_high;
+    tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWEROFF);
 }
 
 uint16_t print_debug() {
@@ -57,6 +65,12 @@ uint16_t print_debug() {
 uint32_t tsl2561_read_result(uint8_t addr) {
     // busy loop until result ready
     // return tsl2561_read_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_HIGH));
+    if (addr == TSL2561_ADDR_FLOAT) {
+        curr_twi = twi_mngr->twi_float;
+    }
+    else if (addr == TSL2561_ADDR_HIGH) {
+        curr_twi = twi_mngr->twi_high;
+    }
     while(!(tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW)))) {}
     // read result register
     uint32_t broadband = (tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_HIGH)) << 8) | tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW));
