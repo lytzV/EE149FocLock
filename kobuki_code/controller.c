@@ -78,8 +78,8 @@ moon_state_t controller(moon_state_t state)
     sensor_distance = get_distance();
     sensor_camera = get_camera();
     // calculate values
-    tilt = measure_tilt();
-    distance = measure_distance();
+    tilt = calculate_tilt();
+    distance = calculate_distance();
     zone = determine_zone();
 
     // delay before continuing
@@ -116,36 +116,70 @@ moon_state_t controller(moon_state_t state)
     case DRIVING:
     {
         // transition logic
-        if (is_button_pressed(&sensors))
-        {
+        if (is_button_pressed(&sensors)){
             state = OFF;
-        }
-        else if (distance < desired_distance - distance_tolerance || distance > desired_distance + distance_tolerance)
-        {
-            // TODO: add another state to adjust to desired distance
-        }
-        else
-        {
-            if (tilt < desired_tilt - tilt_tolerance)
-            {
-                // TODO: driving outward, either increase left (out) wheel speed, or decrease right wheel speed
+            kobukiDriveDirect(0, 0);
+        } else {
+            if (distance >= desired_distance*1.2) {
+                state = ADJUST;
+            } else if (distance <= desired_distance*0.8) {
+                state = ADJUST
+            } else {
+                display_write("DRIVING", DISPLAY_LINE_0);
+                kobukiDriveDirect(wheel_left, wheel_right);
             }
-            else if (tilt > desired_tilt + tilt_tolerance)
-            {
-                // TODO: driving inward, either decrease left (out) wheel speed, or increase right wheel speed
-            }
-            else
-            {
-                // keep driving as is
-            }
-            // perform state-specific actions here
-            display_write("DRIVING", DISPLAY_LINE_0);
-            kobukiDriveDirect(wheel_left, wheel_right);
-            state = DRIVING;
         }
+        
+        // if (is_button_pressed(&sensors))
+        // {
+        //     state = OFF;
+        // }
+        // else if (distance < desired_distance - distance_tolerance || distance > desired_distance + distance_tolerance)
+        // {
+        //     state = ADJUST;
+        //     // TODO: add another state to adjust to desired distance
+        // }
+        // else
+        // {
+        //     if (tilt < desired_tilt - tilt_tolerance)
+        //     {
+        //         // TODO: driving outward, either increase left (out) wheel speed, or decrease right wheel speed
+        //     }
+        //     else if (tilt > desired_tilt + tilt_tolerance)
+        //     {
+        //         // TODO: driving inward, either decrease left (out) wheel speed, or increase right wheel speed
+        //     }
+        //     else
+        //     {
+        //         // keep driving as is
+        //     }
+        //     // perform state-specific actions here
+        //     display_write("DRIVING", DISPLAY_LINE_0);
+        //     kobukiDriveDirect(wheel_left, wheel_right);
+        //     state = DRIVING;
+        // }
         break;
     }
     }
+
+    case ADJUST:
+    {
+        if (is_button_pressed(&sensors)){
+            state = OFF;
+            kobukiDriveDirect(0, 0);
+        } else {
+            if (distance >= desired_distance*1.2) {
+                kobukiDriveDirect(wheel_left*1.5, wheel_right)
+            } else if (distance <= desired_distance*0.8) {
+                kobukiDriveDirect(wheel_left, wheel_right*1.5)
+            } else {
+                state = DRIVING;
+                kobukiDriveDirect(wheel_left, wheel_right)
+            } 
+        }
+        break;
+    }
+
 
     // add other cases here
     return state;
