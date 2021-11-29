@@ -32,8 +32,8 @@
 #define TSL2561_ADDR_HIGH (0x49)  ///< Default address (pin pulled high)
 
 // Lux calculations differ slightly for CS package
-//#define TSL2561_PACKAGE_CS                ///< Chip scale package
-#define TSL2561_PACKAGE_T_FN_CL ///< Dual Flat No-Lead package
+#define TSL2561_PACKAGE_CS                ///< Chip scale package
+// #define TSL2561_PACKAGE_T_FN_CL ///< Dual Flat No-Lead package
 
 #define TSL2561_COMMAND_BIT (0x80) ///< Must be 1
 #define TSL2561_CLEAR_BIT                                                      \
@@ -164,11 +164,11 @@ void tsl2561_init(const nrf_twi_mngr_t* twi);
 // configure tsl2561 with settings from config struct
 // config: config struct
 // returns error code
-ret_code_t tsl2561_config(opt3004_config_t config);
+ret_code_t tsl2561_config();
 
 // Set tsl2561 to shutdown mode
 void tsl2561_shutdown();
 
 // Read lux value from sensor
 // returns floating point lux value
-float tsl2561_read_result();
+uint32_t tsl2561_read_result(uint8_t addr);
