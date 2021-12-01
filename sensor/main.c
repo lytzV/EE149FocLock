@@ -21,7 +21,6 @@
 
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
-NRF_TWI_MNGR_DEF(twi_mngr_instance_high, 5, 0);
 
 
 int main(void) {
@@ -41,15 +40,12 @@ int main(void) {
   error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
   printf("error code is %x\n", error_code);
   APP_ERROR_CHECK(error_code); 
-  error_code = nrf_twi_mngr_init(&twi_mngr_instance_high, &i2c_config);
-  printf("error code is %x\n", error_code);
-  APP_ERROR_CHECK(error_code); 
   printf("going to initialize!\n");
 
   // initialize tsl2561 driver
   tsl2561_init(&twi_mngr_instance);
   error_code = tsl2561_config();
-  printf("initialized!\n");
+  printf("initialized the manager instance!\n");
   APP_ERROR_CHECK(error_code);
 
   // loop forever
