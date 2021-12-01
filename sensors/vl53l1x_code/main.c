@@ -48,6 +48,8 @@ int main(void)
     // printf("initialized!\n");
     // APP_ERROR_CHECK(error_code);
 
+    // initialize vl53l1x platform related
+
     // initialize vl53l1x driver
     VL53L1_DEV deviceHandle;
     deviceHandle->i2c_slave_address = 0x52;
