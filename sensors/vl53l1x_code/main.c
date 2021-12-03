@@ -1,80 +1,88 @@
-// Sensor Reading
-// Read from Sparkfun distance sensor
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-
-#include "app_error.h"
-#include "app_util.h"
-#include "nrf.h"
+#include "nrf_gpio.h"
 #include "nrf_delay.h"
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
-#include "nrf_pwr_mgmt.h"
-#include "nrf_serial.h"
+#include "app_uart.h"
+#include "nrf_uarte.h"
+#include "nrf_power.h"
 
-#include "buckler.h"
-#include "nrf_twi_mngr.h"
-#include "vl53l1_api.h"
+// Pin configurations
+#define LED NRF_GPIO_PIN_MAP(0, 17)
+#define UART_RX NRF_GPIO_PIN_MAP(0, 13)
+#define UART_TX NRF_GPIO_PIN_MAP(0, 6)
+#define UART_TX_BUF_SIZE 256
+#define UART_RX_BUF_SIZE 256
 
-// I2C manager
-NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
+uint8_t r_data = 0;
+uint32_t r_error = 0;
+
+// error handler for UART
+void uart_error_handle(app_uart_evt_t *p_event)
+{
+    if (p_event->evt_type == APP_UART_DATA_READY)
+    {
+        r_error = app_uart_get(&r_data);
+        if (r_error > 0)
+        {
+            printf("Reading %d\n", r_data);
+        }
+        else
+        {
+            printf("Reading error!");
+        }
+    }
+    // just call app error handler
+    else if (p_event->evt_type == APP_UART_COMMUNICATION_ERROR)
+    {
+        //APP_ERROR_HANDLER(p_event->data.error_communication);
+    }
+    else if (p_event->evt_type == APP_UART_FIFO_ERROR)
+    {
+        APP_ERROR_HANDLER(p_event->data.error_code);
+    }
+}
+
+// initialization of UART
+void uart_init(void)
+{
+    uint32_t err_code;
+
+    // configure RX and TX pins
+    // no RTS or CTS pins with flow control disabled
+    // no parity
+    // baudrate 115200
+    const app_uart_comm_params_t comm_params = {
+        UART_RX,
+        UART_TX,
+        0,
+        0,
+        APP_UART_FLOW_CONTROL_DISABLED,
+        false,
+        NRF_UARTE_BAUDRATE_115200};
+
+    // actually initialize UART
+    APP_UART_FIFO_INIT(&comm_params, UART_RX_BUF_SIZE, UART_TX_BUF_SIZE,
+                       uart_error_handle, APP_IRQ_PRIORITY_LOW, err_code);
+    APP_ERROR_CHECK(err_code);
+
+    printf("ERROR: %d\n", err_code);
+}
 
 int main(void)
 {
-    ret_code_t error_code = NRF_SUCCESS;
+    // init led
+    nrf_gpio_cfg_output(LED);
+    nrf_gpio_pin_set(LED);
 
-    // initialize RTT library
-    error_code = NRF_LOG_INIT(NULL);
-    APP_ERROR_CHECK(error_code);
-    NRF_LOG_DEFAULT_BACKENDS_INIT();
-    printf("Log initialized!\n");
+    // init uart
+    uart_init();
 
-    // initialize the TWIM
-    // nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
-    // i2c_config.scl = BUCKLER_SENSORS_SCL;
-    // i2c_config.sda = BUCKLER_SENSORS_SDA;
-    // i2c_config.frequency = NRF_TWIM_FREQ_100K;
-    // error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
-    // printf("error code is %x\n", error_code);
-    // APP_ERROR_CHECK(error_code);
-    // printf("going to initialize!\n");
-
-    // // initialize tsl2561 driver
-    // tsl2561_init(&twi_mngr_instance);
-    // error_code = tsl2561_config();
-    // printf("initialized!\n");
-    // APP_ERROR_CHECK(error_code);
-
-    // initialize vl53l1x platform related
-
-    // initialize vl53l1x driver
-    VL53L1_DEV deviceHandle;
-    deviceHandle->i2c_slave_address = 0x52;
-    deviceHandle->comms_type = VL53L1_I2C;
-    deviceHandle->comms_speed_khz = 400;
-    VL53L1_Error error = VL53L1_DataInit(deviceHandle);
-    printf(error);
-
-    error = VL53L1_StartMeasurement(deviceHandle);
-
-    // loop forever
+    int val = 0;
     while (1)
     {
-        printf("In the loop\n");
-        printf("Debug reading: %x\n", print_debug());
-        uint8_t dataReady;
-        error = VL53L1_GetMeasurementDataReady(deviceHandle, &dataReading);
-        while (dataReady == 0)
-        {
-            nrf_delay_ms(500);
-        }
-        error = VL53L1_RangingMeasurementData_t measurementData;
-        VL53L1_GetRangingMeasurementData(deviceHandle, &measurementData);
-        printf("Current reading of distance sensor: %d\n", measurementData->RangeMilliMeter);
-
-        nrf_delay_ms(500);
+        //printf("Loop Count %d\n", val++);
+        nrf_gpio_pin_toggle(LED);
+        nrf_delay_ms(20);
     }
 }
