@@ -21,9 +21,8 @@
 #include "mpu9250.h"
 
 // Pin configurations
-#define LED NRF_GPIO_PIN_MAP(0, 17)
-#define UART_RX NRF_GPIO_PIN_MAP(0, 15)
-#define UART_TX NRF_GPIO_PIN_MAP(0, 16)
+#define UART_RX NRF_GPIO_PIN_MAP(0, 8)
+#define UART_TX NRF_GPIO_PIN_MAP(0, 6)
 #define UART_TX_BUF_SIZE 256
 #define UART_RX_BUF_SIZE 256
 
@@ -42,18 +41,18 @@ void uart_error_handle(app_uart_evt_t *p_event)
     {
         if (i == 4)
         {
-            printf("Reading %f\n", data);
-            if (data < 2)
-            {
-                kobukiDriveDirect(20, 20);
-            }
-            else
-            {
-                kobukiDriveDirect(0, 0);
-            }
-            char buf[32];
-            snprintf(buf, 32, "%f", data);
-            display_write(buf, DISPLAY_LINE_1);
+            printf("Reading: %f\n", data);
+            // if (data < 2)
+            // {
+            //     kobukiDriveDirect(20, 20);
+            // }
+            // else
+            // {
+            //     kobukiDriveDirect(0, 0);
+            // }
+            // char buf[32];
+            // snprintf(buf, 32, "%f", data);
+            // display_write(buf, DISPLAY_LINE_1);
             i = 0;
             data = 0;
         }
@@ -125,21 +124,21 @@ int main(void)
     // printf("IMU initialized!\n");
 
     // initialize display
-    nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
-    nrf_drv_spi_config_t spi_config = {
-        .sck_pin = BUCKLER_LCD_SCLK,
-        .mosi_pin = BUCKLER_LCD_MOSI,
-        .miso_pin = BUCKLER_LCD_MISO,
-        .ss_pin = BUCKLER_LCD_CS,
-        .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,
-        .orc = 0,
-        .frequency = NRF_DRV_SPI_FREQ_4M,
-        .mode = NRF_DRV_SPI_MODE_2,
-        .bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST};
-    error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
-    APP_ERROR_CHECK(error_code);
-    display_init(&spi_instance);
-    printf("Display initialized!\n");
+    // nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
+    // nrf_drv_spi_config_t spi_config = {
+    //     .sck_pin = BUCKLER_LCD_SCLK,
+    //     .mosi_pin = BUCKLER_LCD_MOSI,
+    //     .miso_pin = BUCKLER_LCD_MISO,
+    //     .ss_pin = BUCKLER_LCD_CS,
+    //     .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,
+    //     .orc = 0,
+    //     .frequency = NRF_DRV_SPI_FREQ_4M,
+    //     .mode = NRF_DRV_SPI_MODE_2,
+    //     .bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST};
+    // error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
+    // APP_ERROR_CHECK(error_code);
+    // display_init(&spi_instance);
+    // printf("Display initialized!\n");
 
     // initialize kobuki
     // kobukiInit();

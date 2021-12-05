@@ -57,35 +57,10 @@ void loop(void)
   distanceSensor.clearInterrupt();
   distanceSensor.stopRanging();
 
-//  Serial.print("Distance(mm): ");
-//  Serial.print(distance);
-
   float distanceInches = distance * 0.0393701;
   float distanceFeet = distanceInches / 12.0;
-
-//  Serial.print("\tDistance(ft): ");
-//  Serial.print(distanceFeet, 2);
 
   byte * data = (byte *) &distanceInches;
 
   Serial.write(data, sizeof(distanceInches));
-
-
-
-//  Serial.println();
-
-//  int randNum = 1;
-//  int i = 0;
-//  while (i < randNum) {
-//    Serial.write(65);
-//    i++;
-//  }
-//  delay(3000);
-
-//  if (Serial.available() > 0) {
-//    int incomingByte = Serial.read();
-//    Serial.print("I received: ");
-//    Serial.println(incomingByte, DEC);
-//  }
-//  delay(3000);
 }
