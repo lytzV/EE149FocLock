@@ -39,7 +39,8 @@ NRF_SERIAL_BUFFERS_DEF(serial_buff, SERIAL_BUFF_TX_SIZE, SERIAL_BUFF_RX_SIZE);
 static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t event);
 NRF_SERIAL_CONFIG_DEF(serial_config, NRF_SERIAL_MODE_DMA,
                       &serial_queue, &serial_buff, ser_event_handler, NULL);
-NRF_SERIAL_UART_DEF(serial_uart, 1);
+
+NRF_SERIAL_UART_DEF(serial_uart, 0);
 
 float data;
 uint8_t *data_array = (uint8_t *)&data;
