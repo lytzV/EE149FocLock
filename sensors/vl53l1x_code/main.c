@@ -6,6 +6,8 @@
 #include "app_uart.h"
 #include "nrf_uarte.h"
 #include "nrf_power.h"
+#include "buckler.h"
+#include "display.h"
 
 // Pin configurations
 #define LED NRF_GPIO_PIN_MAP(0, 17)
