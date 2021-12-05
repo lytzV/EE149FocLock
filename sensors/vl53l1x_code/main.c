@@ -14,23 +14,33 @@
 #define UART_TX_BUF_SIZE 256
 #define UART_RX_BUF_SIZE 256
 
-uint8_t r_data = 0;
+float data;
+uint8_t *data_array = (uint8_t *)&data;
 uint32_t r_error = 0;
+int i = 0;
 
 // error handler for UART
 void uart_error_handle(app_uart_evt_t *p_event)
 {
     if (p_event->evt_type == APP_UART_DATA)
     {
+        if (i == 4)
+        {
+            printf("Reading %f\n", data);
+            i = 0;
+            data = 0;
+        }
+        uint8_t r_data = 0;
         r_error = app_uart_get(&r_data);
         if (r_error == NRF_SUCCESS)
         {
-            printf("Reading %u !!!\n", r_data);
+            data_array[i] = r_data;
         }
         else
         {
             printf("Reading error!");
         }
+        i++;
     }
     // just call app error handler
     else if (p_event->evt_type == APP_UART_COMMUNICATION_ERROR)
@@ -78,29 +88,9 @@ int main(void)
     // init uart
     uart_init();
 
-    uint8_t i = 0;
-
-    while (i < 10)
-    {
-        r_error = app_uart_put(i);
-        if (r_error == NRF_SUCCESS)
-        {
-            printf("Writing %u\n", i);
-        }
-        else
-        {
-            printf("Writing error!");
-        }
-        i++;
-        nrf_delay_ms(20);
-    }
-
-    nrf_delay_ms(1000);
-
     while (1)
     {
-        //printf("Loop Count %d\n", val++);
         nrf_gpio_pin_toggle(LED);
-        nrf_delay_ms(500);
+        nrf_delay_ms(1);
     }
 }
