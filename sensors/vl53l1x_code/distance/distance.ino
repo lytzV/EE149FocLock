@@ -35,39 +35,57 @@ void setup(void)
   Wire.begin();
 
   Serial.begin(115200);
-  // Serial.println("VL53L1X Qwiic Test");
 
-//  if (distanceSensor.begin() != 0) //Begin returns 0 on a good init
-//  {
-//    // Serial.println("Sensor failed to begin. Please check wiring. Freezing...");
-//    while (1)
-//      ;
-//  }
-//  // Serial.println("Sensor online!");
+ if (distanceSensor.begin() != 0) //Begin returns 0 on a good init
+  {
+    Serial.println("Sensor failed to begin. Please check wiring. Freezing...");
+    while (1) {
+      ;
+    }
+    Serial.println("Sensor online!");
+  }
 }
 
 void loop(void)
 {
-//  distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
-//  while (!distanceSensor.checkForDataReady())
-//  {
-//    delay(1);
-//  }
-//  int distance = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
-//  distanceSensor.clearInterrupt();
-//  distanceSensor.stopRanging();
-//
-////  Serial.print("Distance(mm): ");
-////  Serial.print(distance);
-//
-//  float distanceInches = distance * 0.0393701;
-//  float distanceFeet = distanceInches / 12.0;
-//
-////  Serial.print("\tDistance(ft): ");
-////  Serial.print(distanceFeet, 2);
-//
-////  Serial.println();
+  distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
+  while (!distanceSensor.checkForDataReady())
+  {
+    delay(1);
+  }
+  int distance = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
+  distanceSensor.clearInterrupt();
+  distanceSensor.stopRanging();
 
-  Serial.write('1');
-  delay(1000);
+//  Serial.print("Distance(mm): ");
+//  Serial.print(distance);
+
+  float distanceInches = distance * 0.0393701;
+  float distanceFeet = distanceInches / 12.0;
+
+//  Serial.print("\tDistance(ft): ");
+//  Serial.print(distanceFeet, 2);
+
+  byte * data = (byte *) &distanceInches;
+
+  Serial.write(data, sizeof(distanceInches));
+
+
+
+//  Serial.println();
+
+//  int randNum = 1;
+//  int i = 0;
+//  while (i < randNum) {
+//    Serial.write(65);
+//    i++;
+//  }
+//  delay(3000);
+
+//  if (Serial.available() > 0) {
+//    int incomingByte = Serial.read();
+//    Serial.print("I received: ");
+//    Serial.println(incomingByte, DEC);
+//  }
+//  delay(3000);
 }
