@@ -24,23 +24,22 @@
 #define BUCKLER_UART_TX 16
 #define SERIAL_FIFO_TX_SIZE 512
 #define SERIAL_FIFO_RX_SIZE 512
-#define serial_buff2_TX_SIZE 256
-#define serial_buff2_RX_SIZE 256
+#define SERIAL_BUFF_TX_SIZE 256
+#define SERIAL_BUFF_RX_SIZE 256
 
 // Config Definition
-NRF_SERIAL_DRV_uart_config2_DEF(uart_config2,
+NRF_SERIAL_DRV_UART_CONFIG_DEF(uart_config2,
                                BUCKLER_UART_RX, BUCKLER_UART_TX,
                                0, 0,
                                NRF_UART_HWFC_DISABLED, NRF_UART_PARITY_EXCLUDED,
                                NRF_UART_BAUDRATE_115200,
                                UART_DEFAULT_CONFIG_IRQ_PRIORITY);
-NRF_serial_queue2S_DEF(serial_queue2, SERIAL_FIFO_TX_SIZE, SERIAL_FIFO_RX_SIZE);
-NRF_serial_buff2ERS_DEF(serial_buff2, serial_buff2_TX_SIZE, serial_buff2_RX_SIZE);
+NRF_SERIAL_QUEUES_DEF(serial_queue2, SERIAL_FIFO_TX_SIZE, SERIAL_FIFO_RX_SIZE);
+NRF_SERIAL_BUFFERS_DEF(serial_buff2, SERIAL_BUFF_TX_SIZE, SERIAL_BUFF_RX_SIZE);
 static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t event);
-NRF_serial_config2_DEF(serial_config2, NRF_SERIAL_MODE_DMA,
+NRF_SERIAL_CONFIG_DEF(serial_config2, NRF_SERIAL_MODE_DMA,
                       &serial_queue2, &serial_buff2, ser_event_handler, NULL);
-
-NRF_serial_uart2_DEF(serial_uart2, 0);
+NRF_SERIAL_UART_DEF(serial_uart2, 0);
 
 float data;
 uint8_t *data_array = (uint8_t *)&data;
