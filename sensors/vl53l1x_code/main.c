@@ -9,7 +9,7 @@
 
 // Pin configurations
 #define LED NRF_GPIO_PIN_MAP(0, 17)
-#define UART_RX NRF_GPIO_PIN_MAP(0, 13)
+#define UART_RX NRF_GPIO_PIN_MAP(0, 8)
 #define UART_TX NRF_GPIO_PIN_MAP(0, 6)
 #define UART_TX_BUF_SIZE 256
 #define UART_RX_BUF_SIZE 256
@@ -79,6 +79,41 @@ int main(void)
     uart_init();
 
     int val = 0;
+    uint8_t data_sent = 1;
+    int i = 0;
+
+    while (i < 10)
+    {
+        r_error = app_uart_put(data_sent);
+        if (r_error == NRF_SUCCESS)
+        {
+            printf("Writing %u\n", r_data);
+        }
+        else
+        {
+            printf("Writing error!");
+        }
+        i++;
+        nrf_delay_ms(20);
+    }
+
+    nrf_delay_ms(1000);
+
+    while (i < 20)
+    {
+        r_error = app_uart_get(&r_data);
+        if (r_error == NRF_SUCCESS)
+        {
+            printf("Reading %u\n", r_data);
+        }
+        else
+        {
+            printf("Reading error!");
+        }
+        i++;
+        nrf_delay_ms(20);
+    }
+
     while (1)
     {
         //printf("Loop Count %d\n", val++);
