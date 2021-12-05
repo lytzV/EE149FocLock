@@ -8,19 +8,24 @@
 #include "nrf_drv_clock.h"
 #include "nrf_serial.h"
 #include "app_timer.h"
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
+#include "buckler.h"
+#include "display.h"
+#include "kobukiActuator.h"
+#include "kobukiUtilities.h"
+#include "kobukiSensorPoll.h"
+#include "kobukiSensorTypes.h"
+#include "mpu9250.h"
 
 // Config
-#define BUCKLER_UART_RX 17
+#define BUCKLER_UART_RX 15
 #define BUCKLER_UART_TX 16
 #define SERIAL_FIFO_TX_SIZE 512
 #define SERIAL_FIFO_RX_SIZE 512
 #define SERIAL_BUFF_TX_SIZE 128
 #define SERIAL_BUFF_RX_SIZE 128
-#define uart_config "uart_config"
-#define serial_queue "serial_queue"
-#define serial_buff "serial_buff"
-#define serial_config "serial_config"
-#define serial_uart "serial_uart"
 
 // Config Definition
 NRF_SERIAL_DRV_UART_CONFIG_DEF(uart_config,
@@ -37,6 +42,10 @@ NRF_SERIAL_CONFIG_DEF(serial_config, NRF_SERIAL_MODE_DMA,
 
 NRF_SERIAL_UART_DEF(serial_uart, 0);
 
+float data;
+uint8_t *data_array = (uint8_t *)&data;
+uint32_t r_error = 0;
+
 // Error Handler for UART
 static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t event)
 {
@@ -48,10 +57,10 @@ static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t e
         }
         case NRF_SERIAL_EVENT_RX_DATA:
         {
+            data = 0;
             size_t read;
-            uint8_t buffer[16];
-            nrf_serial_read(&serial_uart, &buffer, sizeof(buffer), &read, 0);
-            ser_rx_data(buffer, read);
+            nrf_serial_read(&serial_uart, &data_array, sizeof(data_array), &read, 0);
+            printf("Reading %f\n", data);
             break;
         }
         case NRF_SERIAL_EVENT_DRV_ERR:
@@ -68,16 +77,15 @@ static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t e
     }
 }
 
-void ser_rx_data(uint8_t *data, size_t size) {
-    // Do something useful with recieved data
-    printf("%.*s", size, data);
-}
-
 int main(void) {
     ret_code_t error_code = NRF_SUCCESS;
 
     printf("Initializing\n");
     nrf_serial_init(&serial_uart, &uart_config, &serial_config);
+
+    // initialize kobuki
+    kobukiInit();
+    printf("Kobuki initialized!\n");
 
     while (1) {
         nrf_delay_ms(1);
