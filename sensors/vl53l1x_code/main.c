@@ -20,12 +20,12 @@ uint32_t r_error = 0;
 // error handler for UART
 void uart_error_handle(app_uart_evt_t *p_event)
 {
-    if (p_event->evt_type == APP_UART_DATA_READY)
+    if (p_event->evt_type == APP_UART_DATA)
     {
         r_error = app_uart_get(&r_data);
-        if (r_error > 0)
+        if (r_error == NRF_SUCCESS)
         {
-            printf("Reading %d\n", r_data);
+            printf("Reading %u !!!\n", r_data);
         }
         else
         {
@@ -78,16 +78,14 @@ int main(void)
     // init uart
     uart_init();
 
-    int val = 0;
-    uint8_t data_sent = 1;
-    int i = 0;
+    uint8_t i = 0;
 
     while (i < 10)
     {
-        r_error = app_uart_put(data_sent);
+        r_error = app_uart_put(i);
         if (r_error == NRF_SUCCESS)
         {
-            printf("Writing %u\n", r_data);
+            printf("Writing %u\n", i);
         }
         else
         {
@@ -99,25 +97,10 @@ int main(void)
 
     nrf_delay_ms(1000);
 
-    while (i < 20)
-    {
-        r_error = app_uart_get(&r_data);
-        if (r_error == NRF_SUCCESS)
-        {
-            printf("Reading %u\n", r_data);
-        }
-        else
-        {
-            printf("Reading error!");
-        }
-        i++;
-        nrf_delay_ms(20);
-    }
-
     while (1)
     {
         //printf("Loop Count %d\n", val++);
         nrf_gpio_pin_toggle(LED);
-        nrf_delay_ms(20);
+        nrf_delay_ms(500);
     }
 }

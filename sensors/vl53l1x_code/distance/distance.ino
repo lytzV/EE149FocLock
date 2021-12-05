@@ -68,6 +68,6 @@ void loop(void)
 //
 ////  Serial.println();
 
-  Serial.write('1');
+  Serial.write('7');
   delay(1000);
 }
