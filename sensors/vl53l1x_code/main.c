@@ -29,9 +29,9 @@ void uart_error_handle(app_uart_evt_t *p_event)
         {
             printf("Reading %f\n", data);
             if (data < 2) {
-                kobukiDriveDirect(0, 0);
-            } else {
                 kobukiDriveDirect(20, 20);
+            } else {
+                kobukiDriveDirect(0, 0);
             }
             i = 0;
             data = 0;
