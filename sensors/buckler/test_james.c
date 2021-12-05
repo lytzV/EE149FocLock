@@ -24,23 +24,23 @@
 #define BUCKLER_UART_TX 16
 #define SERIAL_FIFO_TX_SIZE 512
 #define SERIAL_FIFO_RX_SIZE 512
-#define SERIAL_BUFF_TX_SIZE 256
-#define SERIAL_BUFF_RX_SIZE 256
+#define serial_buff2_TX_SIZE 256
+#define serial_buff2_RX_SIZE 256
 
 // Config Definition
-NRF_SERIAL_DRV_UART_CONFIG_DEF(uart_config,
+NRF_SERIAL_DRV_uart_config2_DEF(uart_config2,
                                BUCKLER_UART_RX, BUCKLER_UART_TX,
                                0, 0,
                                NRF_UART_HWFC_DISABLED, NRF_UART_PARITY_EXCLUDED,
                                NRF_UART_BAUDRATE_115200,
                                UART_DEFAULT_CONFIG_IRQ_PRIORITY);
-NRF_SERIAL_QUEUES_DEF(serial_queue, SERIAL_FIFO_TX_SIZE, SERIAL_FIFO_RX_SIZE);
-NRF_SERIAL_BUFFERS_DEF(serial_buff, SERIAL_BUFF_TX_SIZE, SERIAL_BUFF_RX_SIZE);
+NRF_serial_queue2S_DEF(serial_queue2, SERIAL_FIFO_TX_SIZE, SERIAL_FIFO_RX_SIZE);
+NRF_serial_buff2ERS_DEF(serial_buff2, serial_buff2_TX_SIZE, serial_buff2_RX_SIZE);
 static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t event);
-NRF_SERIAL_CONFIG_DEF(serial_config, NRF_SERIAL_MODE_DMA,
-                      &serial_queue, &serial_buff, ser_event_handler, NULL);
+NRF_serial_config2_DEF(serial_config2, NRF_SERIAL_MODE_DMA,
+                      &serial_queue2, &serial_buff2, ser_event_handler, NULL);
 
-NRF_SERIAL_UART_DEF(serial_uart, 0);
+NRF_serial_uart2_DEF(serial_uart2, 0);
 
 float data;
 uint8_t *data_array = (uint8_t *)&data;
@@ -59,15 +59,15 @@ static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t e
     {
         data = 0;
         size_t read;
-        nrf_serial_read(&serial_uart, data_array, sizeof(data_array), &read, 0);
+        nrf_serial_read(&serial_uart2, data_array, sizeof(data_array), &read, 0);
         printf("Reading %f\n", data);
         break;
     }
     case NRF_SERIAL_EVENT_DRV_ERR:
     {
-        nrf_serial_rx_drain(&serial_uart);
-        nrf_serial_uninit(&serial_uart);
-        nrf_serial_init(&serial_uart, &uart_config, &serial_config);
+        nrf_serial_rx_drain(&serial_uart2);
+        nrf_serial_uninit(&serial_uart2);
+        nrf_serial_init(&serial_uart2, &uart_config2, &serial_config2);
         break;
     }
     case NRF_SERIAL_EVENT_FIFO_ERR:
@@ -85,7 +85,7 @@ int main(void)
     // kobukiInit();
     // printf("Kobuki initialized!\n");
 
-    nrf_serial_init(&serial_uart, &uart_config, &serial_config);
+    nrf_serial_init(&serial_uart2, &uart_config2, &serial_config2);
     printf("NRF initialized!\n");
 
     while (1)
