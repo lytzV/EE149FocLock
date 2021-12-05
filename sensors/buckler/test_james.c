@@ -24,8 +24,8 @@
 #define BUCKLER_UART_TX 16
 #define SERIAL_FIFO_TX_SIZE 512
 #define SERIAL_FIFO_RX_SIZE 512
-#define SERIAL_BUFF_TX_SIZE 128
-#define SERIAL_BUFF_RX_SIZE 128
+#define SERIAL_BUFF_TX_SIZE 256
+#define SERIAL_BUFF_RX_SIZE 256
 
 // Config Definition
 NRF_SERIAL_DRV_UART_CONFIG_DEF(uart_config,
@@ -51,43 +51,45 @@ static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t e
 {
     switch (event)
     {
-        case NRF_SERIAL_EVENT_TX_DONE:
-        {
-            break;
-        }
-        case NRF_SERIAL_EVENT_RX_DATA:
-        {
-            data = 0;
-            size_t read;
-            nrf_serial_read(&serial_uart, &data_array, sizeof(data_array), &read, 0);
-            printf("Reading %f\n", data);
-            break;
-        }
-        case NRF_SERIAL_EVENT_DRV_ERR:
-        {
-            nrf_serial_rx_drain(&serial_uart);
-            nrf_serial_uninit(&serial_uart);
-            nrf_serial_init(&serial_uart, &uart_config, &serial_config);
-            break;
-        }
-        case NRF_SERIAL_EVENT_FIFO_ERR:
-        {
-            break;
-        }
+    case NRF_SERIAL_EVENT_TX_DONE:
+    {
+        break;
+    }
+    case NRF_SERIAL_EVENT_RX_DATA:
+    {
+        data = 0;
+        size_t read;
+        nrf_serial_read(&serial_uart, data_array, sizeof(data_array), &read, 0);
+        printf("Reading %f\n", data);
+        break;
+    }
+    case NRF_SERIAL_EVENT_DRV_ERR:
+    {
+        nrf_serial_rx_drain(&serial_uart);
+        nrf_serial_uninit(&serial_uart);
+        nrf_serial_init(&serial_uart, &uart_config, &serial_config);
+        break;
+    }
+    case NRF_SERIAL_EVENT_FIFO_ERR:
+    {
+        break;
+    }
     }
 }
 
-int main(void) {
+int main(void)
+{
     ret_code_t error_code = NRF_SUCCESS;
 
-    printf("Initializing\n");
-    nrf_serial_init(&serial_uart, &uart_config, &serial_config);
-
     // initialize kobuki
-    kobukiInit();
-    printf("Kobuki initialized!\n");
+    // kobukiInit();
+    // printf("Kobuki initialized!\n");
 
-    while (1) {
+    nrf_serial_init(&serial_uart, &uart_config, &serial_config);
+    printf("NRF initialized!\n");
+
+    while (1)
+    {
         nrf_delay_ms(1);
     }
 }
