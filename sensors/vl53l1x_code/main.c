@@ -19,6 +19,7 @@ uint8_t *data_array = (uint8_t *)&data;
 uint32_t r_error = 0;
 int i = 0;
 
+
 // error handler for UART
 void uart_error_handle(app_uart_evt_t *p_event)
 {
@@ -27,6 +28,11 @@ void uart_error_handle(app_uart_evt_t *p_event)
         if (i == 4)
         {
             printf("Reading %f\n", data);
+            if (data < 2) {
+                kobukiDriveDirect(0, 0);
+            } else {
+                kobukiDriveDirect(20, 20);
+            }
             i = 0;
             data = 0;
         }
@@ -87,6 +93,10 @@ int main(void)
 
     // init uart
     uart_init();
+
+    char buf [16];
+    snprintf(buf, 16, "%f", data);
+    display_write (buf, DISPLAY_LINE_1);
 
     while (1)
     {
