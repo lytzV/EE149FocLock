@@ -41,9 +41,16 @@ void tsl2561_init(const nrf_twi_mngr_t* twi) {
 }
 
 ret_code_t tsl2561_config() {
+    // turn on the TSL2561 sensor on floating address
     tsl2561_write_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
+    // configure the integration time and gain on floating address
+    tsl2561_write_reg(TSL2561_ADDRESS, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_TIMING), (tsl2561IntegrationTime | tsl2561Gain));
     printf("Configured floating addr\n");
+
+    // turn on the TSL2561 sensor on high address
     tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_CONTROL), TSL2561_CONTROL_POWERON);
+    // configure the integration time and gain on floating address
+    tsl2561_write_reg(TSL2561_ADDR_HIGH, (TSL2561_COMMAND_BIT | TSL2561_REGISTER_TIMING), (tsl2561IntegrationTime | tsl2561Gain));
     printf("Configured high addr\n");
     return NRF_SUCCESS; 
 }
@@ -63,8 +70,8 @@ uint32_t tsl2561_read_result(uint8_t addr) {
 
     while(!(tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW)))) {}
     // read result register
-    uint32_t broadband = (tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_HIGH)) << 8) | tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_LOW));
-    uint32_t ir = (tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN1_HIGH)) << 8) | tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN1_LOW));
+    uint16_t broadband = tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN0_HIGH));
+    uint16_t ir = tsl2561_read_reg(addr, (TSL2561_COMMAND_BIT | TSL2561_WORD_BIT | TSL2561_REGISTER_CHAN1_HIGH));
 
     unsigned long chScale;
     unsigned long channel1;

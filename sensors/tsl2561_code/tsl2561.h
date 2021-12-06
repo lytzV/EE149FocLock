@@ -32,8 +32,8 @@
 #define TSL2561_ADDR_HIGH (0x49)  ///< Default address (pin pulled high)
 
 // Lux calculations differ slightly for CS package
-#define TSL2561_PACKAGE_CS                ///< Chip scale package
-// #define TSL2561_PACKAGE_T_FN_CL ///< Dual Flat No-Lead package
+// #define TSL2561_PACKAGE_CS                ///< Chip scale package
+#define TSL2561_PACKAGE_T_FN_CL ///< Dual Flat No-Lead package
 
 #define TSL2561_COMMAND_BIT (0x80) ///< Must be 1
 #define TSL2561_CLEAR_BIT                                                      \
