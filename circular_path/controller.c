@@ -15,14 +15,14 @@ float prev_dis_error = 0;
 float prev_ang_error = 0;
 // struct timespec stop, start;
 // clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-float K_dis_p = 0;
+float K_dis_p = 1;
 float K_dis_i = 0;
 float K_dis_d = 0;
-float K_ang_p = 0;
+float K_ang_p = 1;
 float K_ang_i = 0;
 float K_ang_d = 0;
 // value for delay in each cycle
-int interval;
+// int interval;
 //uint16_t curr_encoderL, curr_encoderR, prev_encoderL, prev_encoderR;
 
 // helper methods
@@ -93,14 +93,19 @@ void controller(void) {
 	distance = (distanceR + distanceL) / 2; 
 
 
-	float sensor_distance = 3; // TODO: connect vl531x
-	float sensor_angle = tsl2561_read_angle(); 
+	float sensor_distance = 2; // TODO: connect vl531x
+	float sensor_angle = 1; 
 
 	float v = pid_dist(sensor_distance, distance, interval); 
 	float w = pid_ang(sensor_angle, distance, interval); 
 
 	int wl_speed = (v - w * axleLength / 2) / wheelR;
 	int wr_speed = (v + w * axleLength / 2) / wheelR;
+
+	char buf[16];
+	snprintf(buf, 16, "L=%d, R=%d", wl_speed, wr_speed);
+    printf("%s\n", buf);
+    display_write(buf, DISPLAY_LINE_0);
 
 	kobukiDriveDirect(wl_speed, wr_speed); // update to wheel speed
 }

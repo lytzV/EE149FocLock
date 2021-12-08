@@ -30,12 +30,6 @@
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
-typedef enum {
-  OFF,
-  INIT,
-  DRIVING,
-} robot_state_t;
-
 int mean(int len, int buf[]) {
   int sum = 0;
   for (int i = 0; i < len; i++) {
@@ -94,12 +88,11 @@ int main(void) {
   printf("Kobuki initialized!\n");
 
   // configure initial state
-  robot_state_t state = OFF;
   KobukiSensors_t sensors = {0};
 
   // loop forever, running state machine
   while (1) {
-    nrf_delay_ms(1);
+    nrf_delay_ms(interval);
     // update through controller
     controller();
   }
