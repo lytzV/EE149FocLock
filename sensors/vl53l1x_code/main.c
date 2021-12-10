@@ -1,16 +1,4 @@
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
 #include "app_uart.h"
-#include "nrf_delay.h"
-#include "nrf_gpio.h"
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
-#include "nrf_power.h"
-#include "nrf_uarte.h"
-
 #include "buckler.h"
 #include "display.h"
 #include "kobukiActuator.h"
@@ -18,6 +6,16 @@
 #include "kobukiSensorTypes.h"
 #include "kobukiUtilities.h"
 #include "mpu9250.h"
+#include "nrf_delay.h"
+#include "nrf_gpio.h"
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
+#include "nrf_log_default_backends.h"
+#include "nrf_power.h"
+#include "nrf_uarte.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 // Pin configurations
 #define UART_RX NRF_GPIO_PIN_MAP(0, 15)
