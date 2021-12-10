@@ -1,6 +1,4 @@
-// Robot Template app
-//
-// Framework for creating applications that control the Kobuki robot
+// Project Geocentric
 
 #include <math.h>
 #include <stdbool.h>
@@ -47,11 +45,6 @@ int main(void) {
   NRF_LOG_DEFAULT_BACKENDS_INIT();
   printf("Log initialized!\n");
 
-  // initialize LEDs
-  nrf_gpio_pin_dir_set(23, NRF_GPIO_PIN_DIR_OUTPUT);
-  nrf_gpio_pin_dir_set(24, NRF_GPIO_PIN_DIR_OUTPUT);
-  nrf_gpio_pin_dir_set(25, NRF_GPIO_PIN_DIR_OUTPUT);
-
   // initialize display
   nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
   nrf_drv_spi_config_t spi_config = {
@@ -68,7 +61,7 @@ int main(void) {
   error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
   APP_ERROR_CHECK(error_code);
   display_init(&spi_instance);
-  display_write("Hello, Human!", DISPLAY_LINE_0);
+  display_write("Display init!", DISPLAY_LINE_0);
   printf("Display initialized!\n");
 
   // initialize i2c master (two wire interface)
@@ -78,23 +71,41 @@ int main(void) {
   i2c_config.frequency = NRF_TWIM_FREQ_100K;
   error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
   APP_ERROR_CHECK(error_code);
+  display_write("I2C init!", DISPLAY_LINE_0);
+  printf("I2C initialized!\n");
+
+  // init luminosity sensor 
   tsl2561_init(&twi_mngr_instance);
-  error_code = tsl2561_config();
-  APP_ERROR_CHECK(error_code);
-  printf("IMU initialized!\n");
+  display_write("Lum init!", DISPLAY_LINE_0);
+  printf("Lum initialized!\n");  
 
   // initialize Kobuki
   kobukiInit();
+  display_write("Kobuki init!", DISPLAY_LINE_0);
   printf("Kobuki initialized!\n");
 
   // configure initial state
   KobukiSensors_t sensors = {0};
 
-  // loop forever, running state machine
+  moon_state_t state = OFF;
   while (1) {
-    nrf_delay_ms(interval);
+
+    kobukiUARTUnInit();
+    
+    // luminosity sensor
+    tsl2561_config();
+    float luxAngle = tsl2561_read_angle();
+    float luxRadian = luxAngle * 0.0014 + 0.15;
+    char buf[16];
+    snprintf(buf, 16, "Angle:%f", luxAngle);
+    display_write(buf, DISPLAY_LINE_1);
+    printf(buf);
+    tsl2561_shutdown();
+
     // update through controller
-    controller();
+    kobukiUARTInit();
+    state = controller(state, luxRadian, 0.2);
+
+    nrf_delay_ms(interval);
   }
 }
-

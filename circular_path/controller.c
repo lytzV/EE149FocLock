@@ -16,16 +16,12 @@ float prev_ang_error = 0;
 // struct timespec stop, start;
 // clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 float K_dis_p = 1;
-float K_dis_i = 0;
+float K_dis_i = 0.5;
 float K_dis_d = 0;
 float K_ang_p = 1;
-float K_ang_i = 0;
+float K_ang_i = 0.5;
 float K_ang_d = 0;
-// value for delay in each cycle
-// int interval;
-//uint16_t curr_encoderL, curr_encoderR, prev_encoderL, prev_encoderR;
 
-// helper methods
 // measure encoder change and output average distance
 // consider as feedback from last period to the PID model
 float measure_distance(uint16_t current_encoder, uint16_t previous_encoder) {
@@ -78,23 +74,26 @@ float pid_ang(float ref, float input, float interval) {
 
 }; 
 
-
-
-// public function for controller update
-void controller(void) {
+moon_state_t controller(moon_state_t state, float lumVal, float distVal) {
 	kobukiSensorPoll(&sensors);
-	// read current distance
+
+	// read current distances
 	float distanceL = measure_distance(sensors.leftWheelEncoder, previous_encoderL);
 	float distanceR = measure_distance(sensors.rightWheelEncoder, previous_encoderR);
+	printf("Distances: %f, %f\n", distanceL, distanceR);
+
 	// update previous encoder values to current
 	previous_encoderL = sensors.leftWheelEncoder;
 	previous_encoderR = sensors.rightWheelEncoder; 
 
-	distance = (distanceR + distanceL) / 2; 
+	distance = (distanceR + distanceL) / 2;
+	char buf[16];
+	snprintf(buf, 16, "Distance: %f", distance);
+    printf("%s\n", buf);
+    display_write(buf, DISPLAY_LINE_0);
 
-
-	float sensor_distance = 2; // TODO: connect vl531x
-	float sensor_angle = 1; 
+	float sensor_distance = 0.2; // TODO: connect vl531x
+	float sensor_angle = 0.15; // reading from 2 lux sensors and compute angle
 
 	float v = pid_dist(sensor_distance, distance, interval); 
 	float w = pid_ang(sensor_angle, distance, interval); 
@@ -102,10 +101,46 @@ void controller(void) {
 	int wl_speed = (v - w * axleLength / 2) / wheelR;
 	int wr_speed = (v + w * axleLength / 2) / wheelR;
 
-	char buf[16];
-	snprintf(buf, 16, "L=%d, R=%d", wl_speed, wr_speed);
-    printf("%s\n", buf);
-    display_write(buf, DISPLAY_LINE_0);
+	switch (state)
+    {
 
-	kobukiDriveDirect(wl_speed, wr_speed); // update to wheel speed
+    case OFF:
+    {
+        // transition logic
+        if (is_button_pressed(&sensors))
+        {
+            state = DRIVING;
+            display_write("DRIVE", DISPLAY_LINE_0);
+        }
+        else
+        {
+            // perform state-specific actions here
+            kobukiDriveDirect(0, 0);
+            state = OFF;
+        }
+        break;
+    }
+
+    case DRIVING:
+    {
+        // transition logic
+        if (is_button_pressed(&sensors)){
+            state = OFF;
+            kobukiDriveDirect(0, 0);
+            display_write("OFF", DISPLAY_LINE_0);
+        } else {
+            // do not allow super fast speeds
+			if (wl_speed > 30 || wr_speed > 30) {
+				kobukiDriveDirect(wl_speed, wr_speed);
+			} else {
+				kobukiDriveDirect(wl_speed, wr_speed);
+			} // update to wheel speed
+			printf("Speeds: %d, %d\n", wl_speed, wr_speed);
+        }
+        break;
+    }
+    
+	}
+
+	return state;
 }

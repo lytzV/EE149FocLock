@@ -28,7 +28,7 @@ uint16_t tsl2561_read_reg(uint8_t i2c_addr, uint8_t reg_addr) {
 static void tsl2561_write_reg(uint8_t i2c_addr, uint8_t reg_addr, uint16_t data) {
   uint8_t * data8 = (uint8_t*) &data;
   uint8_t buf[3] = {reg_addr, data8[1], data8[0]};
-  printf("Writing to %x now\n", i2c_addr);
+  // printf("Writing to %x now\n", i2c_addr);
   nrf_twi_mngr_transfer_t const write_transfer[] = {
     NRF_TWI_MNGR_WRITE(i2c_addr, buf, 3, 0),
   };
@@ -199,10 +199,9 @@ uint32_t tsl2561_read_result(uint8_t addr) {
 }
 
 float tsl2561_read_angle(void) {
-    uint32_t left_sensor = tsl2561_read_result(TSL2561_ADDR_FLOAT);
-    uint32_t right_sensor = tsl2561_read_result(TSL2561_ADDR_HIGH);
+    uint16_t left_sensor = (uint16_t) tsl2561_read_result(TSL2561_ADDR_FLOAT);
+    uint16_t right_sensor = (uint16_t) tsl2561_read_result(TSL2561_ADDR_HIGH);
+    float angle = left_sensor - right_sensor;
 
-    int difference = left_sensor - right_sensor;
-
-    return difference / 12.5;
+    return angle;
 }
