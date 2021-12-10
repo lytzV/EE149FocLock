@@ -78,7 +78,7 @@ void uart_init(void) {
 
   // actually initialize UART
   APP_UART_FIFO_INIT(&comm_params, UART_RX_BUF_SIZE, UART_TX_BUF_SIZE,
-                     uart_error_handle, APP_IRQ_PRIORITY_LOW, err_code);
+                     uart_event_handle, APP_IRQ_PRIORITY_LOW, err_code);
   APP_ERROR_CHECK(err_code);
 }
 
@@ -103,22 +103,22 @@ int main(void) {
   printf("Log initialized!\n");
 
   // initialize display
-  nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
-  nrf_drv_spi_config_t spi_config = {
-      .sck_pin = BUCKLER_LCD_SCLK,
-      .mosi_pin = BUCKLER_LCD_MOSI,
-      .miso_pin = BUCKLER_LCD_MISO,
-      .ss_pin = BUCKLER_LCD_CS,
-      .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,
-      .orc = 0,
-      .frequency = NRF_DRV_SPI_FREQ_4M,
-      .mode = NRF_DRV_SPI_MODE_2,
-      .bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST};
-  error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
-  APP_ERROR_CHECK(error_code);
-  display_init(&spi_instance);
-  display_write("Display init!", DISPLAY_LINE_0);
-  printf("Display initialized!\n");
+  // nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
+  // nrf_drv_spi_config_t spi_config = {
+  //     .sck_pin = BUCKLER_LCD_SCLK,
+  //     .mosi_pin = BUCKLER_LCD_MOSI,
+  //     .miso_pin = BUCKLER_LCD_MISO,
+  //     .ss_pin = BUCKLER_LCD_CS,
+  //     .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,
+  //     .orc = 0,
+  //     .frequency = NRF_DRV_SPI_FREQ_4M,
+  //     .mode = NRF_DRV_SPI_MODE_2,
+  //     .bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST};
+  // error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
+  // APP_ERROR_CHECK(error_code);
+  // display_init(&spi_instance);
+  // display_write("Display init!", DISPLAY_LINE_0);
+  // printf("Display initialized!\n");
 
   // initialize i2c master (two wire interface)
   nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
@@ -127,17 +127,14 @@ int main(void) {
   i2c_config.frequency = NRF_TWIM_FREQ_100K;
   error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
   APP_ERROR_CHECK(error_code);
-  display_write("I2C init!", DISPLAY_LINE_0);
   printf("I2C initialized!\n");
 
   // init luminosity sensor
   tsl2561_init(&twi_mngr_instance);
-  display_write("Lum init!", DISPLAY_LINE_0);
   printf("Lum initialized!\n");
 
   // initialize Kobuki
   kobukiInit();
-  display_write("Kobuki init!", DISPLAY_LINE_0);
   printf("Kobuki initialized!\n");
 
   // configure initial state
@@ -149,27 +146,28 @@ int main(void) {
 
     kobukiUARTUnInit();
 
-    // distance sensor (event-based, auto) reading
-    printf("***************************************************************\n");
-    uart_init();
-    while (i < 4) {
-      nrf_delay_ms(1);
-    }
-    app_uart_close();
-    printf("***************************************************************\n");
+    // // distance sensor (event-based, auto) reading
+    // printf("***************************************************************\n");
+    // uart_init();
+    // while (i < 4) {
+    //   nrf_delay_ms(1);
+    // }
+    // app_uart_close();
+    // printf("***************************************************************\n");
 
     // luminosity sensor reading
+    printf("###############################################################\n");
     tsl2561_config();
     float luxAngle = tsl2561_read_angle();
     float luxRadian = luxAngle * 0.0014 + 0.15;
     char buf[16];
     snprintf(buf, 16, "Angle:%f", luxAngle);
-    display_write(buf, DISPLAY_LINE_1);
-    printf(buf);
+    // display_write(buf, DISPLAY_LINE_1);
+    printf("Angle:%f\n", luxAngle);
     tsl2561_shutdown();
+    printf("###############################################################\n");
 
     // state update and Kobuki control
-    kobukiUARTInit();
     printf("Reading: %f\n", data);
     i = 0;
     data = 0;

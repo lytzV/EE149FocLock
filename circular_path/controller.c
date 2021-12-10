@@ -74,7 +74,7 @@ float pid_ang(float ref, float input, float interval) {
 
 }; 
 
-moon_state_t controller(moon_state_t state, float lumVal, float distVal) {
+moon_state_t controller(moon_state_t state, float luxVal, float distVal) {
 	kobukiSensorPoll(&sensors);
 
 	// read current distances
@@ -90,7 +90,7 @@ moon_state_t controller(moon_state_t state, float lumVal, float distVal) {
 	char buf[16];
 	snprintf(buf, 16, "Distance: %f", distance);
     printf("%s\n", buf);
-    display_write(buf, DISPLAY_LINE_0);
+    // display_write(buf, DISPLAY_LINE_0);
 
 	float sensor_distance = 0.2; // TODO: connect vl531x
 	float sensor_angle = 0.15; // reading from 2 lux sensors and compute angle
@@ -110,7 +110,7 @@ moon_state_t controller(moon_state_t state, float lumVal, float distVal) {
         if (is_button_pressed(&sensors))
         {
             state = DRIVING;
-            display_write("DRIVE", DISPLAY_LINE_0);
+            // display_write("DRIVE", DISPLAY_LINE_0);
         }
         else
         {
@@ -127,7 +127,7 @@ moon_state_t controller(moon_state_t state, float lumVal, float distVal) {
         if (is_button_pressed(&sensors)){
             state = OFF;
             kobukiDriveDirect(0, 0);
-            display_write("OFF", DISPLAY_LINE_0);
+            // display_write("OFF", DISPLAY_LINE_0);
         } else {
             // do not allow super fast speeds
 			if (wl_speed > 30 || wr_speed > 30) {
