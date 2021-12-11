@@ -1,13 +1,17 @@
+#include "controller_distance_angle.h"
+#include "display.h"
+#include "kobukiSensorTypes.h"
 #include <math.h>
 #include <stdio.h>
-#include "controller_distance_angle.h"
-#include "kobukiSensorTypes.h"
-#include "display.h"
 //#include "tsl2561.h"
 
 KobukiSensors_t sensors = {0};
 // configure initial state
+<<<<<<< HEAD
 float period = 16 * 2; 
+=======
+float period = 16 * 2 * M_PI;
+>>>>>>> 8cafdfc8bd6837300a468890139dec50047f6e17
 
 float ideal_distance = 0.5;
 float ideal_tilt = M_PI_2;
@@ -63,31 +67,27 @@ static float calculate_distance()
 
 // PID control logic for distance
 float pid_dist(float ref, float input) {
-	// calculate the error terms 
-	float error = ref - input;
-	integ_dis_error = error + integ_dis_error;
-	float rate_error = error - prev_dis_error;
+  // calculate the error terms
+  float error = ref - input;
+  integ_dis_error = error + integ_dis_error;
+  float rate_error = error - prev_dis_error;
 
-	float output = K_dis_p * error + K_dis_i * integ_dis_error + K_dis_d * rate_error;
-
-	prev_dis_error = error;
-	
-	return output;	
-}; 
+  float output = K_dis_p * error + K_dis_i * integ_dis_error + K_dis_d * rate_error;
+  prev_dis_error = error;
+  return output;
+};
 
 // PID control logic for angle
 float pid_tilt(float ref, float input) {
-	// calculate the error terms 
-	float error = ref - input;
-	integ_tilt_error = error + integ_tilt_error;
-	float rate_error = error - prev_tilt_error;
+  // calculate the error terms
+  float error = ref - input;
+  integ_tilt_error = error + integ_tilt_error;
+  float rate_error = error - prev_tilt_error;
 
-	float output = K_ang_p * error + K_ang_i * integ_tilt_error + K_ang_d * rate_error;
-
-	prev_tilt_error = error;
-	
-	return output;	
-}; 
+  float output = K_ang_p * error + K_ang_i * integ_tilt_error + K_ang_d * rate_error;
+  prev_tilt_error = error;
+  return output;
+};
 
 moon_state_t controller(moon_state_t state) {
 
@@ -136,4 +136,5 @@ moon_state_t controller(moon_state_t state) {
   	}
 
 	return state;
+
 }
