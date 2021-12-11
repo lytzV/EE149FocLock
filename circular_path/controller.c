@@ -39,6 +39,7 @@ float measure_distance(uint16_t current_encoder, uint16_t previous_encoder) {
 }
 
 // PID control logic for distance
+
 float pid_dist(float ref, float input) {
 	// calculate the error terms 
 	float error = ref - input;
@@ -54,11 +55,13 @@ float pid_dist(float ref, float input) {
 }; 
 
 // PID control logic for angle
+
 float pid_ang(float ref, float input) {
 	// calculate the error terms 
 	float error = ref - input;
 	integ_angle_error = error + integ_angle_error;
 	float rate_error = error - prev_ang_error;
+
 
 	float output = K_ang_p * error + K_ang_i * integ_angle_error + K_ang_d * rate_error;
 
@@ -69,6 +72,7 @@ float pid_ang(float ref, float input) {
 }; 
 
 moon_state_t controller(moon_state_t state, float luxVal, float distVal) {
+
 	integ_dis_error = 0;
 	integ_angle_error = 0;
 	float sensor_distance = 1; // TODO: connect vl531x
@@ -151,11 +155,11 @@ moon_state_t controller(moon_state_t state, float luxVal, float distVal) {
 		}
 	
 
+
 	// update previous encoder values to current
 	previous_encoderL = sensors.leftWheelEncoder;
 	previous_encoderR = sensors.rightWheelEncoder; 
 
-	
 
 	return state;
 }
