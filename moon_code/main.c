@@ -82,7 +82,7 @@ int main(void) {
     // kobukiUARTInit();
 
     // state update and Kobuki control
-    state = controller(state, 0, M_PI_2);
+    state = controller(state);
     // delay some time between each loop for correct behaviors
     uint32_t interval_uint32 = interval;
     nrf_delay_ms(interval_uint32);
