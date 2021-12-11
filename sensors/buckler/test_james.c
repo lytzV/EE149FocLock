@@ -1,22 +1,24 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "nrf_gpio.h"
-#include "nrf_delay.h"
-#include "nrf_uarte.h"
-#include "nrf_power.h"
-#include "nrf_drv_clock.h"
-#include "nrf_serial.h"
+
 #include "app_timer.h"
+#include "nrf_delay.h"
+#include "nrf_drv_clock.h"
+#include "nrf_gpio.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
+#include "nrf_power.h"
+#include "nrf_serial.h"
+#include "nrf_uarte.h"
+
 #include "buckler.h"
 #include "display.h"
 #include "kobukiActuator.h"
-#include "kobukiUtilities.h"
 #include "kobukiSensorPoll.h"
 #include "kobukiSensorTypes.h"
+#include "kobukiUtilities.h"
 #include "mpu9250.h"
 
 // Config
@@ -47,47 +49,41 @@ uint8_t *data_array = (uint8_t *)&data;
 uint32_t r_error = 0;
 
 // Error Handler for UART
-static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t event)
-{
-    switch (event)
-    {
-        case NRF_SERIAL_EVENT_TX_DONE:
-        {
-            break;
-        }
-        case NRF_SERIAL_EVENT_RX_DATA:
-        {
-            data = 0;
-            size_t read;
-            nrf_serial_read(&serial_uart, &data_array, sizeof(data_array), &read, 0);
-            printf("Reading %f\n", data);
-            break;
-        }
-        case NRF_SERIAL_EVENT_DRV_ERR:
-        {
-            nrf_serial_rx_drain(&serial_uart);
-            nrf_serial_uninit(&serial_uart);
-            nrf_serial_init(&serial_uart, &uart_config, &serial_config);
-            break;
-        }
-        case NRF_SERIAL_EVENT_FIFO_ERR:
-        {
-            break;
-        }
-    }
+static void ser_event_handler(nrf_serial_t const *p_serial, nrf_serial_event_t event) {
+  switch (event) {
+  case NRF_SERIAL_EVENT_TX_DONE: {
+    break;
+  }
+  case NRF_SERIAL_EVENT_RX_DATA: {
+    data = 0;
+    size_t read;
+    nrf_serial_read(&serial_uart, &data_array, sizeof(data_array), &read, 0);
+    printf("Reading %f\n", data);
+    break;
+  }
+  case NRF_SERIAL_EVENT_DRV_ERR: {
+    nrf_serial_rx_drain(&serial_uart);
+    nrf_serial_uninit(&serial_uart);
+    nrf_serial_init(&serial_uart, &uart_config, &serial_config);
+    break;
+  }
+  case NRF_SERIAL_EVENT_FIFO_ERR: {
+    break;
+  }
+  }
 }
 
 int main(void) {
-    ret_code_t error_code = NRF_SUCCESS;
+  ret_code_t error_code = NRF_SUCCESS;
 
-    printf("Initializing\n");
-    nrf_serial_init(&serial_uart, &uart_config, &serial_config);
+  printf("Initializing\n");
+  nrf_serial_init(&serial_uart, &uart_config, &serial_config);
 
-    // initialize kobuki
-    kobukiInit();
-    printf("Kobuki initialized!\n");
+  // initialize kobuki
+  kobukiInit();
+  printf("Kobuki initialized!\n");
 
-    while (1) {
-        nrf_delay_ms(1);
-    }
+  while (1) {
+    nrf_delay_ms(1);
+  }
 }

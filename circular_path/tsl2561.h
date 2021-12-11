@@ -172,3 +172,7 @@ void tsl2561_shutdown();
 // Read lux value from sensor
 // returns floating point lux value
 uint32_t tsl2561_read_result(uint8_t addr);
+
+
+// approximate the angle of the light source with input from left and right lux sensors
+float tsl2561_read_angle(void);
