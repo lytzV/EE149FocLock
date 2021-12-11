@@ -1,6 +1,5 @@
 #include <math.h>
 #include <stdio.h>
-#include <time.h>
 #include "controller.h"
 #include "kobukiSensorTypes.h"
 #include "display.h"
@@ -13,19 +12,17 @@ uint16_t previous_encoderR = 0;
 float distance = 0;
 float prev_dis_error = 0;
 float prev_ang_error = 0;
-// struct timespec stop, start;
-// clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 float K_dis_p = 1;
-float K_dis_i = 0.5;
+float K_dis_i = 0;
 float K_dis_d = 0;
 float K_ang_p = 1;
-float K_ang_i = 0.5;
+float K_ang_i = 0;
 float K_ang_d = 0;
 
 // measure encoder change and output average distance
 // consider as feedback from last period to the PID model
 float measure_distance(uint16_t current_encoder, uint16_t previous_encoder) {
-  const float CONVERSION = 0.00065;
+  const float CONVERSION = 0.0000855;
 
   float result = 0.0;
   if (current_encoder >= previous_encoder) {
@@ -38,18 +35,14 @@ float measure_distance(uint16_t current_encoder, uint16_t previous_encoder) {
 
 // PID control logic for distance
 float pid_dist(float ref, float input, float interval) {
-	// calculate time difference for derivative calculation
-	//clock_gettime(CLOCK_MONOTONIC_RAW, &stop);
-	//uint16_t interval = (stop.tv_sec - start.tv_sec) * 1000000 + (stop.tv_nsec - start.tv_nsec) / 1000;
 	// calculate the error terms 
-	float error = ref -input;
-	float integ_error = integ_error + error * interval;
-	float rate_error = (error - prev_dis_error)/interval;
+	float error = ref - input;
+	float integ_error = error * interval;
+	float rate_error = (error - prev_dis_error) / interval;
 
 	float output = K_dis_p * error + K_dis_i * integ_error + K_dis_d * rate_error;
 
 	prev_dis_error = error;
-	//clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 	
 	return output;	
 
@@ -57,18 +50,14 @@ float pid_dist(float ref, float input, float interval) {
 
 // PID control logic for angle
 float pid_ang(float ref, float input, float interval) {
-	// calculate time difference for derivative calculation
-	//clock_gettime(CLOCK_MONOTONIC_RAW, &stop);
-	//uint16_t interval = (stop.tv_sec - start.tv_sec) * 1000000 + (stop.tv_nsec - start.tv_nsec) / 1000;
 	// calculate the error terms 
-	float error = ref -input;
-	float integ_error = integ_error + error * interval;
-	float rate_error = (error - prev_dis_error)/interval;
+	float error = ref - input;
+	float integ_error = error * interval;
+	float rate_error = (error - prev_ang_error)/interval;
 
 	float output = K_ang_p * error + K_ang_i * integ_error + K_ang_d * rate_error;
 
 	prev_ang_error = error;
-	//clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 	
 	return output;	
 
@@ -88,18 +77,25 @@ moon_state_t controller(moon_state_t state, float luxVal, float distVal) {
 
 	distance = (distanceR + distanceL) / 2;
 	char buf[16];
-	snprintf(buf, 16, "Distance: %f", distance);
+	snprintf(buf, 16, "Total distance: %f", distance);
     printf("%s\n", buf);
     // display_write(buf, DISPLAY_LINE_0);
 
-	float sensor_distance = 0.2; // TODO: connect vl531x
-	float sensor_angle = 0.15; // reading from 2 lux sensors and compute angle
+	float sensor_distance = 0.02; // TODO: connect vl531x
+	float sensor_angle = 0; // reading from 2 lux sensors and compute angle
 
-	float v = pid_dist(sensor_distance, distance, interval); 
-	float w = pid_ang(sensor_angle, distance, interval); 
+	float interval_f = interval;
+	printf("Interval in Float: %f\n", interval_f);
+	float v = pid_dist(sensor_distance, distance, interval_f);
+	float w = pid_ang(sensor_angle, distance, interval);
+	printf("V: %f, W: %f\n", v, w);
 
-	int wl_speed = (v - w * axleLength / 2) / wheelR;
-	int wr_speed = (v + w * axleLength / 2) / wheelR;
+	float wl_speed_f = (v - w * axleLength / 2) / wheelR * 1000;
+	float wr_speed_f = (v + w * axleLength / 2) / wheelR * 1000;
+	printf("wl_speed_f: %f, wr_speed_f: %f\n", wl_speed_f, wr_speed_f);
+	int16_t wl_speed = ceilf(wl_speed_f);
+	int16_t wr_speed = ceilf(wr_speed_f);
+	// printf("wl_speed: %d, wr_speed: %d\n", wl_speed, wr_speed);
 
 	switch (state)
     {
