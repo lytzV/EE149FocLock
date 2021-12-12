@@ -1,36 +1,62 @@
 #include <Pixy2.h>
+#include <ComponentObject.h>
+#include <RangeSensor.h>
+#include <SparkFun_VL53L1X.h>
+#include <vl53l1x_class.h>
+#include <vl53l1_error_codes.h>
+#include <Wire.h>
+#include "SparkFun_VL53L1X.h" 
+#include <SoftwareSerial.h>
+
+SoftwareSerial mySerial(2, 3); // RX, TX
+SFEVL53L1X distanceSensor;
 
 Pixy2 pixy;
 
 void setup()
 {
+  // PIXY CODE
   Serial.begin(115200);
-  Serial.print("Starting...\n");
-
-  // we need to initialize the pixy object
   pixy.init();
-  // Change to line tracking program
   pixy.changeProg("block");
+
+  // DISTANCE CODE
+//  Wire.begin();
+//  Serial.begin(115200);
+//  if (distanceSensor.begin() != 0) //Begin returns 0 on a good init
+//  {
+//    while (1) {
+//      ;
+//    }
+//  }
 }
 
 void loop()
 {
-  static int i = 0;
-  char buf[128];
- 
-  uint16_t blocks = pixy.ccc.getBlocks();
-  i++;
-  // print all blocks
-  if (blocks && i % 50 == 0) { // change the frequency of printing 
-      int16_t angle = pixy.ccc.blocks[0].m_angle;
+  // PIXY CODE
+    uint16_t blocks = pixy.ccc.getBlocks();
+    if (blocks) { // change the frequency of printing 
+        int16_t mx = pixy.ccc.blocks[0].m_x;
+        
+        byte * data = (byte *) &mx; // prepare data and ship
+        Serial.write(data, sizeof(mx));
+        //Serial.println(mx);
+    }
 
-      sprintf(buf, "x Center of block: %d\n", pixy.ccc.blocks[0].m_x);
-      Serial.print(buf);
-      sprintf(buf, "Angle: %d\n", angle);
-      Serial.print(buf);
-
-      // prepare data and ship
-      byte * data = (byte *) &angle;
-      Serial.write(data, sizeof(angle));
-  }
+   // DISTANCE CODE
+//    distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
+//    while (!distanceSensor.checkForDataReady())
+//    {
+//      delay(1);
+//    }
+//    int distance = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
+//    distanceSensor.clearInterrupt();
+//    distanceSensor.stopRanging();
+//  
+//    float distanceInches = distance * 0.0393701;
+//    float distanceFeet = distanceInches / 12.0;
+//  
+//    byte * data = (byte *) &distanceInches;
+//  
+//    Serial.write(data, sizeof(distanceInches));
 }
