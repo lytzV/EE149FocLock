@@ -10,7 +10,7 @@ KobukiSensors_t sensors = {0};
 float period = 16 * 2; 
 
 float ideal_distance = 0.5;
-float ideal_tilt = M_PI_2;
+float ideal_tilt = 0;
 
 float integ_dis_error = 0;
 float integ_tilt_error = 0;
@@ -37,7 +37,7 @@ static float get_luminosity()
 static float get_distance()
 {
     // TODO: implement
-    return 0;
+    return 1;
 }
 
 // camera value
@@ -51,15 +51,21 @@ static float get_camera()
 static float calculate_tilt()
 {
     // TODO: implement
-    return M_PI_2;
+    float proportional = get_distance() * 0.00714 - 0.16095;
+    float side_length = get_camera() * proportional; 
+    double angle = atan(side_length/get_distance());
+    return angle;
 }
 
 // utilize distance sensor and/or luminosity sensors to measure distance from earth
 static float calculate_distance()
 {
+    
     // TODO: implement
-    return 0.5;
+
 }
+
+
 
 // PID control logic for distance
 float pid_dist(float ref, float input) {
@@ -93,8 +99,13 @@ moon_state_t controller(moon_state_t state) {
 	float ideal_vl = angular_velocity * (ideal_distance - (axleLength / 2));
 	float ideal_vr = angular_velocity * (ideal_distance + (axleLength / 2));
 	//float error_distance = pid_dist(ideal_distance, distance);
-	float error_tilt = pid_tilt(ideal_tilt, calculate_tilt());
-	float error_dist = pid_dist(ideal_distance, calculate_distance());
+	if (fabs(calculate_tilt()) <= 5/180*M_PI) {
+		float error_tilt = pid_tilt(ideal_tilt, calculate_tilt());	
+	} else {
+		float error_tilt = 0;
+	}
+	
+	float error_dist = pid_dist(ideal_distance, get_distance());
 
 	float wl_speed_f = ideal_vl + error_tilt * (axleLength / 2) / ((float) interval / 1000); //m/s
 	float wr_speed_f = ideal_vr - error_tilt * (axleLength / 2) / ((float) interval / 1000); //m/s
