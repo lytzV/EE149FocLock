@@ -7,11 +7,7 @@
 
 KobukiSensors_t sensors = {0};
 // configure initial state
-<<<<<<< HEAD
 float period = 16 * 2; 
-=======
-float period = 16 * 2 * M_PI;
->>>>>>> 8cafdfc8bd6837300a468890139dec50047f6e17
 
 float ideal_distance = 0.5;
 float ideal_tilt = M_PI_2;
