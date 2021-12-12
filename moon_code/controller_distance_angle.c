@@ -6,9 +6,8 @@
 //#include "tsl2561.h"
 
 KobukiSensors_t sensors = {0};
-// configure initial state
-float period = 16 * 2 * M_PI;
 
+float period = 16 * 2 * M_PI;
 float ideal_distance = 0.5;
 float ideal_tilt = M_PI_2;
 
@@ -48,21 +47,50 @@ float pid_tilt(float ref, float input) {
   return output;
 };
 
-moon_state_t controller(moon_state_t state, float distance, float tilt) {
+// 0 == PID. 1 == heuristic.
+int mode = 1;
+int tilt_threshold = 10;
+int16_t wl_speed_1 = 0;
+int16_t wr_speed_1 = 0;
+
+moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
+
+  // ONLY consider errors and adjust wheel speeds in driving state
+  if (state == DRIVING) {
+    float angular_velocity = 2 * M_PI / period;
+    float ideal_vl = angular_velocity * (ideal_distance - (axleLength / 2));
+    float ideal_vr = angular_velocity * (ideal_distance + (axleLength / 2));
+
+    int16_t wl_speed;
+    int16_t wr_speed;
+    if (mode == 0) {
+      // float error_distance = pid_dist(ideal_distance, distance);
+      // TODO: make sure the direct casting from uint16_t to float is ok
+      float error_tilt = pid_tilt(ideal_tilt, tilt);
+
+      float wl_speed_f = ideal_vl + error_tilt * (axleLength / 2) / ((float)interval / 1000); //m/s
+      float wr_speed_f = ideal_vr - error_tilt * (axleLength / 2) / ((float)interval / 1000); //m/s
+      wl_speed = ceilf(wl_speed_f * 1000);                                                    //mm/s
+      wr_speed = ceilf(wr_speed_f * 1000);                                                    //mm/s
+      printf("wl_speed: %d, wr_speed: %d, error_tilt: %f\n", wl_speed, wr_speed, error_tilt);
+    } else {
+      if (wl_speed_1 == 0 || wr_speed_1 == 0) {
+        wl_speed_1 = ceilf(ideal_vl * 1000);
+        wr_speed_1 = ceilf(ideal_vr * 1000);
+      }
+      if (tilt > 158 + tilt_threshold) {
+        wl_speed_1 += 1;
+        wr_speed_1 -= 2;
+      } else if (tilt < 158 - tilt_threshold) {
+        wl_speed_1 -= 1;
+        wr_speed_1 += 2;
+      }
+      wl_speed = wl_speed_1;
+      wr_speed = wr_speed_1;
+    }
+  }
 
   kobukiSensorPoll(&sensors);
-
-  float angular_velocity = 2 * M_PI / period;
-  float ideal_vl = angular_velocity * (ideal_distance - (axleLength / 2));
-  float ideal_vr = angular_velocity * (ideal_distance + (axleLength / 2));
-  //float error_distance = pid_dist(ideal_distance, distance);
-  float error_tilt = pid_tilt(ideal_tilt, tilt);
-
-  float wl_speed_f = ideal_vl + error_tilt * (axleLength / 2) / ((float)interval / 1000); //m/s
-  float wr_speed_f = ideal_vr - error_tilt * (axleLength / 2) / ((float)interval / 1000); //m/s
-  int16_t wl_speed = ceilf(wl_speed_f * 1000);                                            //mm/s
-  int16_t wr_speed = ceilf(wr_speed_f * 1000);                                            //mm/s
-  printf("wl_speed: %d, wr_speed: %d, error_tilt: %f\n", wl_speed, wr_speed, error_tilt);
 
   switch (state) {
     case OFF: {
