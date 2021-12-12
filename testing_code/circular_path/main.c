@@ -131,8 +131,10 @@ int main(void) {
   printf("I2C initialized!\n");
 
   // init luminosity sensor
-  tsl2561_init(&twi_mngr_instance);
-  printf("Lum initialized!\n");
+
+  // tsl2561_init(&twi_mngr_instance);
+  // printf("Lum initialized!\n");
+
 
   // initialize Kobuki
   kobukiInit();
@@ -142,51 +144,15 @@ int main(void) {
   KobukiSensors_t sensors = {0};
   moon_state_t state = OFF;
 
-  struct timeval stop, start;
   // init and un-init each module to avoid conflicting behaviors
-  while (1) {
+  int i = 0;
+  while (i < 1) {
 
-    // gettimeofday(&start, NULL);
+  
 
-    kobukiUARTUnInit();
-
-    // // distance sensor (event-based, auto) reading
-    // printf("***************************************************************\n");
-    // uart_init();
-    // while (i < 4) {
-    //   nrf_delay_ms(1);
-    // }
-    // app_uart_close();
-    // printf("***************************************************************\n");
-
-    // luminosity sensor reading
-    printf("###############################################################\n");
-    tsl2561_config();
-    float luxAngle = tsl2561_read_angle();
-    float luxRadian = luxAngle * 0.0014 + 0.15;
-    char buf[16];
-    snprintf(buf, 16, "Angle: %f", luxAngle);
-    // display_write(buf, DISPLAY_LINE_1);
-    printf("Angle: %f\n", luxAngle);
-    tsl2561_shutdown();
-    printf("###############################################################\n");
-
-    printf("Reading: %f\n", data);
-    i = 0;
-    data = 0;
-    kobukiUARTInit();
-
-    // calculate time difference for derivative calculation
-    // gettimeofday(&start, NULL);
-    // gettimeofday(&stop, NULL);
-    // printf("took %f ms\n", (stop.tv_sec - start.tv_sec) * 1000.0f + (stop.tv_usec - start.tv_usec) / 1000.0f); 
-
-    // state update and Kobuki control
-    state = controller(state, luxRadian, 0.2);
-
-    // delay some time between each loop for correct behaviors
-    uint32_t interval_uint32 = interval;
-    printf("Delay interval: %lu\n", interval_uint32);
-    nrf_delay_ms(interval_uint32);
+    state = controller(state, 0, 0.2);
+    i ++;
+  
+   
   }
 }
