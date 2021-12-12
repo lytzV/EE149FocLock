@@ -10,4 +10,4 @@ static float ticksPerRot = 2578.33; // ticks per rotation for encoders
 static float Ts = 0.01; // sample time
 static int interval = 10; // in ms
 
-moon_state_t controller(moon_state_t state, float distance, float tilt);
+moon_state_t controller(moon_state_t state);
