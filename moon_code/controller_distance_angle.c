@@ -60,7 +60,7 @@ static float calculate_tilt()
 // utilize distance sensor and/or luminosity sensors to measure distance from earth
 static float calculate_distance()
 {
-    
+    return 1;
     // TODO: implement
 
 }
@@ -99,10 +99,9 @@ moon_state_t controller(moon_state_t state) {
 	float ideal_vl = angular_velocity * (ideal_distance - (axleLength / 2));
 	float ideal_vr = angular_velocity * (ideal_distance + (axleLength / 2));
 	//float error_distance = pid_dist(ideal_distance, distance);
+	float error_tilt = 0;
 	if (fabs(calculate_tilt()) <= 5/180*M_PI) {
 		float error_tilt = pid_tilt(ideal_tilt, calculate_tilt());	
-	} else {
-		float error_tilt = 0;
 	}
 	
 	float error_dist = pid_dist(ideal_distance, get_distance());
