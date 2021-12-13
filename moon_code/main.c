@@ -31,7 +31,7 @@ typedef enum {
   PIXY,
 } sensor_type_t;
 
-// UART configurations: Pin and buffer size
+// TODO: change the pins here
 #define UART_RX_DISTANCE NRF_GPIO_PIN_MAP(0, 15)
 #define UART_TX_DISTANCE NRF_GPIO_PIN_MAP(0, 16)
 #define UART_RX_PIXY NRF_GPIO_PIN_MAP(0, 8)
@@ -40,21 +40,39 @@ typedef enum {
 #define UART_RX_BUF_SIZE 128
 
 // Variables for reading sensor output
-float data;
-uint8_t *data_array = (uint8_t *)&data;
-uint32_t r_error = 0;
+sensor_type_t sensor_type;
+float distance;
+uint8_t *distance_array = (uint8_t *)&distance;
+uint16_t pixy;
+uint8_t *pixy_array = (uint8_t *)&pixy;
+uint32_t sensor_error = 0;
 int i = 0;
 
 // Event handler for UART
 void uart_event_handle(app_uart_evt_t *p_event) {
   if (p_event->evt_type == APP_UART_DATA) {
-    uint8_t r_data = 0;
-    r_error = app_uart_get(&r_data);
-    if (r_error == NRF_SUCCESS && i < 4) {
-      data_array[i] = r_data;
-      printf("%d\n", i);
-    } else {
-      printf("Reading ends!");
+    if (sensor_type == DISTANCE) {
+      uint8_t data = 0;
+      sensor_error = app_uart_get(&data);
+      if (sensor_error == NRF_SUCCESS && i < 4) {
+        distance_array[i] = data;
+        // TODO: delete this debug print if everything works
+        printf("%d\n", i);
+      } else {
+        // TODO: delete this debug print if everything works
+        printf("Reading distance ends or errors!");
+      }
+    } else if (sensor_type == PIXY) {
+      uint8_t data = 0;
+      sensor_error = app_uart_get(&data);
+      if (sensor_error == NRF_SUCCESS && i < 2) {
+        pixy_array[i] = data;
+        // TODO: delete this debug print if everything works
+        printf("%d\n", i);
+      } else {
+        // TODO: delete this debug print if everything works
+        printf("Reading pixy ends or errors!");
+      }
     }
     i++;
   } else if (p_event->evt_type == APP_UART_COMMUNICATION_ERROR) {
@@ -66,7 +84,7 @@ void uart_event_handle(app_uart_evt_t *p_event) {
 }
 
 // initialization of UART
-void uart_init(sensor_type_t sensor_type) {
+void uart_init(void) {
   uint32_t err_code;
   const app_uart_comm_params_t comm_params_distance = {
       UART_RX_DISTANCE,
@@ -85,17 +103,12 @@ void uart_init(sensor_type_t sensor_type) {
       false,
       NRF_UARTE_BAUDRATE_115200};
 
-  switch (sensor_type) {
-    case DISTANCE: {
-      APP_UART_FIFO_INIT(&comm_params_distance, UART_RX_BUF_SIZE, UART_TX_BUF_SIZE,
-                         uart_event_handle, APP_IRQ_PRIORITY_LOW, err_code);
-      break;
-    }
-    case PIXY: {
-      APP_UART_FIFO_INIT(&comm_params_pixy, UART_RX_BUF_SIZE, UART_TX_BUF_SIZE,
-                         uart_event_handle, APP_IRQ_PRIORITY_LOW, err_code);
-      break;
-    }
+  if (sensor_type == DISTANCE) {
+    APP_UART_FIFO_INIT(&comm_params_distance, UART_RX_BUF_SIZE, UART_TX_BUF_SIZE,
+                       uart_event_handle, APP_IRQ_PRIORITY_LOW, err_code);
+  } else if (sensor_type == PIXY) {
+    APP_UART_FIFO_INIT(&comm_params_pixy, UART_RX_BUF_SIZE, UART_TX_BUF_SIZE,
+                       uart_event_handle, APP_IRQ_PRIORITY_LOW, err_code);
   }
 
   APP_ERROR_CHECK(err_code);
@@ -132,43 +145,53 @@ int main(void) {
   kobukiInit();
   printf("Kobuki initialized!\n");
 
-  // configure initial state
   moon_state_t state = OFF;
 
-  // init and un-init each module to avoid conflicting behaviors
+  // init and un-init each module to avoid conflicting uart
   while (1) {
-    //kobukiUARTUnInit();
+    kobukiUARTUnInit();
 
-    // // distance sensor (event-based, auto) reading
-    // printf("**********************\n");
-    // uart_init(DISTANCE);
-    // while (i < 4) {
-    //   nrf_delay_ms(1);
-    // }
-    // app_uart_close();
-    // printf("**********************\n");
+    // distance sensor (event-based, auto) reading
+    printf("**********************\n");
+    sensor_type = DISTANCE;
+    distance = -1;
+    uart_init(DISTANCE);
+    // Distance sensor should only output values between 0 and 400 (inches, in a room)
+    while (distance < 0 || distance > 400) {
+      while (i < 4) {
+        nrf_delay_ms(1);
+      }
+      i = 0;
+      // TODO: delete this debug print if everything works
+      printf("Invalid distance reading: %f\n", distance);
+    }
+    app_uart_close();
+    printf("Distance: %f\n", distance);
+    printf("**********************\n");
 
-    // printf("Reading distance: %f\n", data);
-    // i = 0;
-    // data = 0;
+    // pixy camera (event-based, auto) reading
+    printf("######################\n");
+    sensor_type = PIXY;
+    pixy = 410;
+    uart_init(DISTANCE);
+    // Pixy should only output values between 0 and 316 (horizontal position in camera)
+    while (pixy > 316) {
+      while (i < 2) {
+        nrf_delay_ms(1);
+      }
+      i = 0;
+      // TODO: delete this debug print if everything works
+      printf("Invalid pixy reading: %u\n", pixy);
+    }
+    app_uart_close();
+    printf("Pixy: %f\n", pixy);
+    printf("######################\n");
 
-    // // pixy camera (event-based, auto) reading
-    // printf("######################\n");
-    // uart_init(PIXY);
-    // while (i < 4) {
-    //   nrf_delay_ms(1);
-    // }
-    // app_uart_close();
-    // printf("######################\n");
-
-    // printf("Reading angle: %f\n", data);
-    // i = 0;
-    // data = 0;
-
-    // kobukiUARTInit();
+    kobukiUARTInit();
 
     // state update and Kobuki control
-    state = controller(state);
+    state = controller(state, distance, pixy);
+
     // delay some time between each loop for correct behaviors
     uint32_t interval_uint32 = interval;
     nrf_delay_ms(interval_uint32);
