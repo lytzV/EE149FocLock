@@ -6,10 +6,8 @@
 //#include "tsl2561.h"
 
 KobukiSensors_t sensors = {0};
-// configure initial state
-float period = 16 * 2;
 
-float period = 16 * 2 * M_PI;
+float period = 16 * 2;
 float ideal_distance = 0.5;
 float ideal_tilt = 0;
 
@@ -89,6 +87,8 @@ int16_t wl_speed_1 = 0;
 int16_t wr_speed_1 = 0;
 
 moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
+  int16_t wl_speed;
+  int16_t wr_speed;
 
   // ONLY consider errors and adjust wheel speeds in driving state
   if (state == DRIVING) {
@@ -96,8 +96,6 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
     float ideal_vl = angular_velocity * (ideal_distance - (axleLength / 2));
     float ideal_vr = angular_velocity * (ideal_distance + (axleLength / 2));
 
-    int16_t wl_speed;
-    int16_t wr_speed;
     if (mode == 0) {
       float error_tilt = 0;
       if (fabs(calculate_tilt()) <= 5 / 180 * M_PI) {
