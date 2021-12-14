@@ -3,12 +3,12 @@
 #include "app_timer.h"
 #include "app_uart.h"
 #include "buckler.h"
-#include "controller_distance_angle.h"
-#include "display.h"
-#include "kobukiActuator.h"
-#include "kobukiSensorPoll.h"
-#include "kobukiSensorTypes.h"
-#include "kobukiUtilities.h"
+// #include "controller_distance_angle.h"
+// #include "display.h"
+// #include "kobukiActuator.h"
+// #include "kobukiSensorPoll.h"
+// #include "kobukiSensorTypes.h"
+// #include "kobukiUtilities.h"
 #include "nrf_twi_mngr.h"
 
 #include "nrf.h"
@@ -53,6 +53,7 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
       break;
     case TWIS_EVT_WRITE_DONE:
       printf("Total bytes written %d\n", p_event->data.rx_amount);
+      printf("rxbuff: %d", rxbuff[0]);
       break;
 
     case TWIS_EVT_READ_ERROR:
@@ -96,7 +97,6 @@ int main(void) {
 
   // loop forever
   while (1) {
-    printf("slave\n");
     // nrf_delay_ms(1000);
     __WFI();
   }
