@@ -29,14 +29,6 @@ void loop()
 { 
   // PIXY
   uint16_t blocks = pixy.ccc.getBlocks();
-  if (blocks) { // change the frequency of printing 
-    int16_t mx = pixy.ccc.blocks[0].m_x;
-
-    byte * data = (byte *) &mx; // prepare data and ship
-    Wire.beginTransmission(102); // transmit to device #4
-    Wire.write(data, sizeof(mx));
-    Wire.endTransmission();    // stop transmitting
-  }
 
   // Distance Sensor
   distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
@@ -44,17 +36,21 @@ void loop()
   {
     delay(1);
   }
+  int16_t mx = pixy.ccc.blocks[0].m_x;
+  byte * data1 = (byte *) &mx; // prepare data and ship
+  
   int distance = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
   distanceSensor.clearInterrupt();
   distanceSensor.stopRanging();
   
   float distanceInches = distance * 0.0393701;
   float distanceFeet = distanceInches / 12.0;
-  
-  byte * data = (byte *) &distanceInches;
-  
+  byte * data2 = (byte *) &distanceInches;
+
   Wire.beginTransmission(102); // transmit to device #4
-  Wire.write(data, sizeof(distanceInches));
+  Wire.write(data1, sizeof(mx));
+  Wire.write(data2, sizeof(distanceInches));
   Wire.endTransmission();    // stop transmitting
   
+
 } 
