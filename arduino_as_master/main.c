@@ -31,6 +31,7 @@
 
 static const nrf_drv_twis_t m_twis = NRF_DRV_TWIS_INSTANCE(1);
 
+static uint8_t txbuff[1] = {1};
 static uint8_t rxbuff[4] = { 0, 0, 0, 0 };
 
 typedef enum {
@@ -50,7 +51,8 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
   switch (p_event->type) {
     case TWIS_EVT_READ_REQ:
       if (p_event->data.buf_req) {
-          nrf_drv_twis_tx_prepare(&m_twis, (sensor_type == PIXY) ? 0 : 1, 1);
+          nrf_drv_twis_tx_prepare(&m_twis, txbuff, 1);
+          printf("Preparing to send\n");
       }
       break;
     case TWIS_EVT_READ_DONE:
@@ -59,6 +61,7 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
     case TWIS_EVT_WRITE_REQ:
       if (p_event->data.buf_req) {
         nrf_drv_twis_rx_prepare(&m_twis, rxbuff, 4);
+        printf("Preparing to read\n");
       }
       break;
     case TWIS_EVT_WRITE_DONE:
