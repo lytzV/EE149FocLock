@@ -116,7 +116,6 @@ int main(void) {
     sensor_type = DISTANCE;
     txbuff[0] = 1;
     // Distance sensor should only output values between 0 and 400 (inches, in a room)
-    app_uart_close();
     printf("Distance: %f\n", distance);
     printf("######################\n");
     sensor_type = PIXY;
