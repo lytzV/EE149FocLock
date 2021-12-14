@@ -32,8 +32,8 @@
 static const nrf_drv_twis_t m_twis = NRF_DRV_TWIS_INSTANCE(1);
 
 static uint8_t rxbuff[6] = {0,0,0,0,0,0};
-float *distance = &rxbuff[2];
-uint16_t pixy = &rxbuff[0];
+float *distance = &(rxbuff[2]);
+uint16_t pixy = &(rxbuff[0]);
 
 #define I2C_DEVICE_ID 0x66
 
@@ -49,7 +49,11 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
       }
       break;
     case TWIS_EVT_WRITE_DONE:
-        
+        printf("**********************\n");
+        // Distance sensor should only output values between 0 and 400 (inches, in a room)
+        printf("Distance: %f\n", *distance);
+        // Pixy should only output values between 0 and 316 (horizontal position in camera)
+        printf("Pixy: %d\n", *pixy);
       break;
 
     case TWIS_EVT_READ_ERROR:
@@ -88,12 +92,6 @@ int main(void) {
 
   // loop forever
   while (1) {
-    printf("**********************\n");
-    // Distance sensor should only output values between 0 and 400 (inches, in a room)
-
-    printf("Distance: %f\n", *distance);
-    // Pixy should only output values between 0 and 316 (horizontal position in camera)
-    printf("Pixy: %d\n", *pixy);
     __WFI();
   }
 }
