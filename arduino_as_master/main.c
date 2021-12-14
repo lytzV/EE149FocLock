@@ -100,11 +100,6 @@ int main(void) {
 
   nrf_drv_twis_enable(&m_twis);
 
-  // Normally this would be populated via serial from the LIDAR
-  for (int i = 0; i < 256; ++i) {
-    serial_buff[i] = i;
-  }
-
   // loop forever
   while (1) {
     // nrf_delay_ms(1000);
