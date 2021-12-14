@@ -31,8 +31,18 @@
 
 static const nrf_drv_twis_t m_twis = NRF_DRV_TWIS_INSTANCE(1);
 
-static uint8_t serial_buff[256];
 static uint8_t rxbuff[4] = { 0, 0, 0, 0 };
+
+typedef enum {
+  DISTANCE,
+  PIXY,
+} sensor_type_t;
+sensor_type_t sensor_type;
+float distance;
+uint8_t *distance_array = (uint8_t *)&distance;
+uint16_t pixy;
+uint8_t *pixy_array = (uint8_t *)&pixy;
+uint32_t sensor_error = 0;
 
 #define I2C_DEVICE_ID 0x66
 
@@ -40,11 +50,11 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
   switch (p_event->type) {
     case TWIS_EVT_READ_REQ:
       if (p_event->data.buf_req) {
-          nrf_drv_twis_tx_prepare(&m_twis, serial_buff, 200);
+          nrf_drv_twis_tx_prepare(&m_twis, (sensor_type == PIXY) ? 0 : 1, 1);
       }
       break;
     case TWIS_EVT_READ_DONE:
-      printf("Total bytes read %d\n", p_event->data.tx_amount);
+      printf("Total bytes sent %d\n", p_event->data.tx_amount);
       break;
     case TWIS_EVT_WRITE_REQ:
       if (p_event->data.buf_req) {
@@ -52,7 +62,7 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
       }
       break;
     case TWIS_EVT_WRITE_DONE:
-      printf("Total bytes written %d\n", p_event->data.rx_amount);
+      printf("Total bytes received %d\n", p_event->data.rx_amount);
       printf("rxbuff: %d", rxbuff[0]);
       break;
 
