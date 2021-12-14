@@ -160,7 +160,6 @@ int main(void) {
   display_write("Display init!", DISPLAY_LINE_0);
   printf("Display initialized!\n");
 
-  // I2C initialization
   // initialize i2c master (two wire interface)
   nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
   i2c_config.scl = BUCKLER_SENSORS_SCL;
@@ -181,22 +180,22 @@ int main(void) {
   while (1) {
 
     // distance sensor (event-based, auto) reading
-    printf("**********************\n");
-    sensor_type = DISTANCE;
-    distance = -1;
-    uart_init(DISTANCE);
-    // Distance sensor should only output values between 0 and 400 (inches, in a room)
-    while (distance < 0 || distance > 400) {
-      while (i < 4) {
-        nrf_delay_ms(1);
-      }
-      i = 0;
-      // TODO: delete this debug print if everything works
-      printf("Invalid distance reading: %f\n", distance);
-    }
-    app_uart_close();
-    printf("Distance: %f\n", distance);
-    printf("**********************\n");
+    // printf("**********************\n");
+    // sensor_type = DISTANCE;
+    // distance = -1;
+    // uart_init();
+    // // Distance sensor should only output values between 0 and 400 (inches, in a room)
+    // while (distance < 0 || distance > 400) {
+    //   while (i < 4) {
+    //     nrf_delay_ms(1);
+    //   }
+    //   i = 0;
+    //   // TODO: delete this debug print if everything works
+    //   printf("Invalid distance reading: %f\n", distance);
+    // }
+    // app_uart_close();
+    // printf("Distance: %f\n", distance);
+    // printf("**********************\n");
 
     // pixy camera (event-based, auto) reading
     // printf("######################\n");
@@ -219,10 +218,10 @@ int main(void) {
     // reading from i2c
     uint16_t i2c_result = i2c_read_reg(0x4, 10);
     uint8_t pixy = i2c_result >> 8;
-    printf("Pixy: %d", pixy);
+    printf("Pixy: %d\n", pixy);
 
     // state update and Kobuki control
-    // state = controller(state, 0);
+    //state = controller(state, 0, pixy);
 
     // delay some time between each loop for correct behaviors
     uint32_t interval_uint32 = interval;

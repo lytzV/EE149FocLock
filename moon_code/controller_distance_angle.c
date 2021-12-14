@@ -7,7 +7,7 @@
 
 KobukiSensors_t sensors = {0};
 
-float period = 16 * 2;
+float period = 66;
 float ideal_distance = 0.5;
 float ideal_tilt = 0;
 
@@ -23,37 +23,18 @@ float K_ang_p = 1;
 float K_ang_i = 0;
 float K_ang_d = 0;
 
-// luminosity values
-static float get_luminosity() {
-  // TODO: implement
-  return 0;
-}
-
-// sparkfun distance value
-static float get_distance() {
-  // TODO: implement
-  return 1;
-}
-
-// camera value
-static float get_camera() {
-  // TODO: implement
-  return 0;
-}
+// sensor readings that are passed into this controller
+float luminosity;
+float distance;
+uint16_t pixy;
 
 // utilize luminosity sensors to determine how tilting the moon is
 static float calculate_tilt() {
   // TODO: implement
-  float proportional = get_distance() * 0.00714 - 0.16095;
-  float side_length = get_camera() * proportional;
-  double angle = atan(side_length / get_distance());
+  float proportional = distance * 0.00714 - 0.16095;
+  float side_length = pixy * proportional;
+  double angle = atan(side_length / distance);
   return angle;
-}
-
-// utilize distance sensor and/or luminosity sensors to measure distance from earth
-static float calculate_distance() {
-  return 1;
-  // TODO: implement
 }
 
 // PID control logic for distance
@@ -82,13 +63,17 @@ float pid_tilt(float ref, float input) {
 
 // 0 == PID. 1 == heuristic.
 int mode = 1;
-int tilt_threshold = 10;
+// center tilt == 158.
+uint16_t tilt_threshold = 20;
+bool adjusting = false;
 int16_t wl_speed_1 = 0;
 int16_t wr_speed_1 = 0;
 
 moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
   int16_t wl_speed;
   int16_t wr_speed;
+
+  printf("%u\n", tilt);
 
   // ONLY consider errors and adjust wheel speeds in driving state
   if (state == DRIVING) {
@@ -113,12 +98,25 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
         wl_speed_1 = ceilf(ideal_vl * 1000);
         wr_speed_1 = ceilf(ideal_vr * 1000);
       }
-      if (tilt > 158 + tilt_threshold) {
-        wl_speed_1 += 1;
-        wr_speed_1 -= 2;
-      } else if (tilt < 158 - tilt_threshold) {
-        wl_speed_1 -= 1;
-        wr_speed_1 += 2;
+      if (adjusting == true) {
+        if (158 - tilt_threshold < tilt && tilt < 158 + tilt_threshold) {
+          adjusting = false;
+          wl_speed_1 = ceilf(ideal_vl * 1000);
+          wr_speed_1 = ceilf(ideal_vr * 1000);
+        } else {
+          wl_speed_1 = 40;
+          wr_speed_1 = -40;
+        }
+      } else {
+        if (158 - tilt_threshold < tilt && tilt < 158 + tilt_threshold) {
+          adjusting = false;
+        } else if (158 + tilt_threshold < tilt && tilt < 250) {
+          wl_speed_1 += 1;
+        } else if (70 < tilt && tilt < 158 - tilt_threshold) {
+          wl_speed_1 -= 1;
+        } else {
+          adjusting = true;
+        }
       }
       wl_speed = wl_speed_1;
       wr_speed = wr_speed_1;
@@ -149,6 +147,9 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
       } else {
         // perform state-specific actions here
         display_write("DRIVING", DISPLAY_LINE_0);
+        char buf[16];
+        snprintf(buf, 16, "%d", tilt);
+        display_write(buf, DISPLAY_LINE_1);
         kobukiDriveDirect(wl_speed, wr_speed);
         state = DRIVING;
       }
