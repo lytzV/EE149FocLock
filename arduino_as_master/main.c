@@ -3,12 +3,12 @@
 #include "app_timer.h"
 #include "app_uart.h"
 #include "buckler.h"
-// #include "controller_distance_angle.h"
-// #include "display.h"
-// #include "kobukiActuator.h"
-// #include "kobukiSensorPoll.h"
-// #include "kobukiSensorTypes.h"
-// #include "kobukiUtilities.h"
+#include "controller_distance_angle.h"
+#include "display.h"
+#include "kobukiActuator.h"
+#include "kobukiSensorPoll.h"
+#include "kobukiSensorTypes.h"
+#include "kobukiUtilities.h"
 #include "nrf_twi_mngr.h"
 
 #include "nrf.h"
@@ -34,6 +34,7 @@ static const nrf_drv_twis_t m_twis = NRF_DRV_TWIS_INSTANCE(1);
 static uint8_t rxbuff[6] = {0,0,0,0,0,0};
 float *distance = &(rxbuff[2]);
 uint16_t *pixy = &(rxbuff[0]);
+moon_state_t state = OFF;
 
 #define I2C_DEVICE_ID 0x66
 
@@ -54,6 +55,7 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
         printf("Distance: %f\n", *distance);
         // Pixy should only output values between 0 and 316 (horizontal position in camera)
         printf("Pixy: %d\n", *pixy);
+        state = controller(state, *distance, *pixy);
       break;
 
     case TWIS_EVT_READ_ERROR:
@@ -89,7 +91,6 @@ int main(void) {
   APP_ERROR_CHECK(error_code);
 
   nrf_drv_twis_enable(&m_twis);
-
   // loop forever
   while (1) {
     __WFI();

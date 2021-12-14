@@ -103,6 +103,11 @@ BOARD_SOURCES += \
 	nrfx_uart.c\
 	nrfx_uarte.c\
 	simple_logger.c\
+	display.c\
+	kobukiActuator.c\
+	kobukiSensorPoll.c\
+	kobukiSensorTypes.c\
+	kobukiUtilities.c\
 
 ifneq ($(SOFTDEVICE_MODEL),blank)
 BOARD_SOURCES += \
