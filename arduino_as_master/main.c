@@ -32,13 +32,12 @@
 static const nrf_drv_twis_t m_twis = NRF_DRV_TWIS_INSTANCE(1);
 
 static uint8_t txbuff[1] = {1};
-static uint8_t rxbuff[4] = { 0, 0, 0, 0 };
 
 typedef enum {
   DISTANCE,
   PIXY,
 } sensor_type_t;
-sensor_type_t sensor_type;
+sensor_type_t sensor_type = DISTANCE;
 float distance;
 uint8_t *distance_array = (uint8_t *)&distance;
 uint16_t pixy;
@@ -60,13 +59,21 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
       break;
     case TWIS_EVT_WRITE_REQ:
       if (p_event->data.buf_req) {
-        nrf_drv_twis_rx_prepare(&m_twis, rxbuff, 4);
+        if (sensor_type == PIXY) {
+            nrf_drv_twis_rx_prepare(&m_twis, pixy_array, 2);
+        } else {
+            nrf_drv_twis_rx_prepare(&m_twis, distance_array, 4);
+        }
         printf("Preparing to read\n");
       }
       break;
     case TWIS_EVT_WRITE_DONE:
       printf("Total bytes received %d\n", p_event->data.rx_amount);
-      printf("rxbuff: %d", rxbuff[0]);
+      if (sensor_type == PIXY) {
+            printf("PIXY: %d\n", pixy);
+        } else {
+            printf("Distance: %f\n", distance);
+        }
       break;
 
     case TWIS_EVT_READ_ERROR:
