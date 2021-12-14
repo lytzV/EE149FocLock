@@ -1,7 +1,4 @@
 #include <stdint.h>
-#include "display.h"
-#include "kobukiSensorTypes.h"
-#include "display.h"
 #include "kobukiSensorTypes.h"
 
 typedef enum {

@@ -130,7 +130,7 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
         state = DRIVING;
       } else {
         // perform state-specific actions here
-        display_write("OFF", DISPLAY_LINE_0);
+        //("OFF", DISPLAY_LINE_0);
         kobukiDriveDirect(0, 0);
         state = OFF;
       }
@@ -143,10 +143,10 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
         state = OFF;
       } else {
         // perform state-specific actions here
-        display_write("DRIVING", DISPLAY_LINE_0);
+        //display_write("DRIVING", DISPLAY_LINE_0);
         char buf[16];
         snprintf(buf, 16, "%d", tilt);
-        display_write(buf, DISPLAY_LINE_1);
+        //display_write(buf, DISPLAY_LINE_1);
         kobukiDriveDirect(wl_speed, wr_speed);
         state = DRIVING;
       }
