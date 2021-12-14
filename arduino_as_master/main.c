@@ -51,11 +51,11 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
     case TWIS_EVT_READ_REQ:
       if (p_event->data.buf_req) {
           nrf_drv_twis_tx_prepare(&m_twis, txbuff, 1);
-          printf("Preparing to send\n");
+          //printf("Preparing to send\n");
       }
       break;
     case TWIS_EVT_READ_DONE:
-      printf("Total bytes sent %d\n", p_event->data.tx_amount);
+      //printf("Total bytes sent %d\n", p_event->data.tx_amount);
       break;
     case TWIS_EVT_WRITE_REQ:
       if (p_event->data.buf_req) {
@@ -64,16 +64,16 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
         } else {
             nrf_drv_twis_rx_prepare(&m_twis, distance_array, 4);
         }
-        printf("Preparing to read\n");
+        //printf("Preparing to read\n");
       }
       break;
     case TWIS_EVT_WRITE_DONE:
-      printf("Total bytes received %d\n", p_event->data.rx_amount);
-      if (sensor_type == PIXY) {
-            printf("PIXY: %d\n", pixy);
-        } else {
-            printf("Distance: %f\n", distance);
-        }
+    //   printf("Total bytes received %d\n", p_event->data.rx_amount);
+    //   if (sensor_type == PIXY) {
+    //         printf("PIXY: %d\n", pixy);
+    //     } else {
+    //         printf("Distance: %f\n", distance);
+    //     }
       break;
 
     case TWIS_EVT_READ_ERROR:
@@ -117,12 +117,10 @@ int main(void) {
     txbuff[0] = 1;
     // Distance sensor should only output values between 0 and 400 (inches, in a room)
     printf("Distance: %f\n", distance);
-    printf("######################\n");
     sensor_type = PIXY;
     txbuff[0] = 0;
     // Pixy should only output values between 0 and 316 (horizontal position in camera)
-    printf("Pixy: %f\n", pixy);
-    printf("######################\n");
+    printf("Pixy: %d\n", pixy);
     __WFI();
   }
 }
