@@ -112,7 +112,18 @@ int main(void) {
 
   // loop forever
   while (1) {
-    // nrf_delay_ms(1000);
+    printf("**********************\n");
+    sensor_type = DISTANCE;
+    txbuff[0] = 1;
+    // Distance sensor should only output values between 0 and 400 (inches, in a room)
+    app_uart_close();
+    printf("Distance: %f\n", distance);
+    printf("######################\n");
+    sensor_type = PIXY;
+    txbuff[0] = 0;
+    // Pixy should only output values between 0 and 316 (horizontal position in camera)
+    printf("Pixy: %f\n", pixy);
+    printf("######################\n");
     __WFI();
   }
 }

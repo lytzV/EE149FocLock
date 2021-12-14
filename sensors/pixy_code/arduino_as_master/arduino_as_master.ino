@@ -64,5 +64,4 @@ void loop()
     Wire.endTransmission();    // stop transmitting
   }
   
-  delay(100);
 } 
