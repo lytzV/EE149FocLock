@@ -39,8 +39,8 @@ void loop()
         int16_t mx = pixy.ccc.blocks[0].m_x;
         
         byte * data = (byte *) &mx; // prepare data and ship
-        Serial.write(data, sizeof(mx));
-        //Serial.println(mx);
+        //Serial.write(data, sizeof(mx));
+        Serial.println(mx);
     }
 
    // DISTANCE CODE
