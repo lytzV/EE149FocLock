@@ -31,49 +31,25 @@
 
 static const nrf_drv_twis_t m_twis = NRF_DRV_TWIS_INSTANCE(1);
 
-static uint8_t txbuff[1] = {1};
-
-typedef enum {
-  DISTANCE,
-  PIXY,
-} sensor_type_t;
-sensor_type_t sensor_type = DISTANCE;
-float distance;
-uint8_t *distance_array = (uint8_t *)&distance;
-uint16_t pixy;
-uint8_t *pixy_array = (uint8_t *)&pixy;
-uint32_t sensor_error = 0;
+static uint8_t rxbuff[6] = {0,0,0,0,0,0};
+float *distance = &rxbuff[2];
+uint16_t pixy = &rxbuff[0];
 
 #define I2C_DEVICE_ID 0x66
 
 static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
   switch (p_event->type) {
     case TWIS_EVT_READ_REQ:
-      if (p_event->data.buf_req) {
-          nrf_drv_twis_tx_prepare(&m_twis, txbuff, 1);
-          //printf("Preparing to send\n");
-      }
       break;
     case TWIS_EVT_READ_DONE:
-      //printf("Total bytes sent %d\n", p_event->data.tx_amount);
       break;
     case TWIS_EVT_WRITE_REQ:
       if (p_event->data.buf_req) {
-        if (sensor_type == PIXY) {
-            nrf_drv_twis_rx_prepare(&m_twis, pixy_array, 2);
-        } else {
-            nrf_drv_twis_rx_prepare(&m_twis, distance_array, 4);
-        }
-        //printf("Preparing to read\n");
+        nrf_drv_twis_rx_prepare(&m_twis, rxbuff, 6);
       }
       break;
     case TWIS_EVT_WRITE_DONE:
-    //   printf("Total bytes received %d\n", p_event->data.rx_amount);
-    //   if (sensor_type == PIXY) {
-    //         printf("PIXY: %d\n", pixy);
-    //     } else {
-    //         printf("Distance: %f\n", distance);
-    //     }
+        
       break;
 
     case TWIS_EVT_READ_ERROR:
@@ -113,14 +89,11 @@ int main(void) {
   // loop forever
   while (1) {
     printf("**********************\n");
-    sensor_type = DISTANCE;
-    txbuff[0] = 1;
     // Distance sensor should only output values between 0 and 400 (inches, in a room)
-    printf("Distance: %f\n", distance);
-    sensor_type = PIXY;
-    txbuff[0] = 0;
+
+    printf("Distance: %f\n", *distance);
     // Pixy should only output values between 0 and 316 (horizontal position in camera)
-    printf("Pixy: %d\n", pixy);
+    printf("Pixy: %d\n", *pixy);
     __WFI();
   }
 }
