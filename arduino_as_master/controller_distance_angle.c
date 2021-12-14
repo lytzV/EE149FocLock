@@ -1,8 +1,5 @@
 #include "controller_distance_angle.h"
-#include "display.h"
-#include "kobukiSensorTypes.h"
-#include <math.h>
-#include <stdio.h>
+
 //#include "tsl2561.h"
 
 KobukiSensors_t sensors = {0};
