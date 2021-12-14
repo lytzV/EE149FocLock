@@ -33,7 +33,7 @@ static const nrf_drv_twis_t m_twis = NRF_DRV_TWIS_INSTANCE(1);
 
 static uint8_t rxbuff[6] = {0,0,0,0,0,0};
 float *distance = &(rxbuff[2]);
-uint16_t pixy = &(rxbuff[0]);
+uint16_t *pixy = &(rxbuff[0]);
 
 #define I2C_DEVICE_ID 0x66
 
