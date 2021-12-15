@@ -44,18 +44,19 @@ void loop()
   distanceSensor.stopRanging();
   
   float distanceInches = distance * 0.0393701;
+  float distanceCms = distanceInches * 2.54;
   float distanceFeet = distanceInches / 12.0;
   byte * data2 = (byte *) &distanceInches;
 
   Wire.beginTransmission(102); // transmit to device #4
   Wire.write(data1, sizeof(mx));
-  Wire.write(data2, sizeof(distanceInches));
+  Wire.write(data2, sizeof(distanceCms));
   Wire.endTransmission();    // stop transmitting
 
 
 
   
-  Serial.println(distanceInches);
+  Serial.println(distanceCms);
   
 
 } 

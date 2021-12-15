@@ -37,6 +37,7 @@ uint8_t *distance_buf = (uint8_t *)&distance;
 uint16_t pixy;
 uint8_t *pixy_buf = (uint8_t *)&pixy;
 moon_state_t state = OFF;
+bool received = 0;
 
 #define I2C_DEVICE_ID 0x66
 
@@ -52,7 +53,7 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
       }
       break;
     case TWIS_EVT_WRITE_DONE:
-        printf("**********************\n");
+//        printf("**********************\n");
         distance_buf[0] = rxbuff[2];
         distance_buf[1] = rxbuff[3];
         distance_buf[2] = rxbuff[4];
@@ -61,10 +62,11 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
         pixy_buf[0] = rxbuff[0];
         pixy_buf[1] = rxbuff[1];
         // Distance sensor should only output values between 0 and 400 (inches, in a room)
-        printf("Distance: %f\n", distance);
+//        printf("Distance: %f\n", distance);
         // Pixy should only output values between 0 and 316 (horizontal position in camera)
-        printf("Pixy: %d\n", pixy);
-        state = controller(state, distance, pixy);
+//        printf("Pixy: %d\n", pixy);
+//        state = controller(state, distance, pixy);
+        received = 1;
       break;
 
     case TWIS_EVT_READ_ERROR:
@@ -106,6 +108,12 @@ int main(void) {
   // loop forever
   while (1) {
     __WFI();
-    nrf_delay_ms(1);
+    while (!received) {
+      nrf_delay_ms(1);
+    }
+      received = 0;
+      state = controller(state, distance, pixy);
+      printf("Distance: %f, Pixy: %d\n", distance, pixy);
+    nrf_delay_ms(20);
   }
 }
