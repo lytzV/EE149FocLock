@@ -55,7 +55,7 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
         printf("Distance: %f\n", *distance);
         // Pixy should only output values between 0 and 316 (horizontal position in camera)
         printf("Pixy: %d\n", *pixy);
-        state = controller(state, *distance, *pixy);
+//        state = controller(state, *distance, *pixy);
       break;
 
     case TWIS_EVT_READ_ERROR:

@@ -106,7 +106,6 @@ BOARD_SOURCES += \
 	display.c\
 	kobukiActuator.c\
 	kobukiSensorPoll.c\
-	kobukiSensorTypes.c\
 	kobukiUtilities.c\
 
 ifneq ($(SOFTDEVICE_MODEL),blank)

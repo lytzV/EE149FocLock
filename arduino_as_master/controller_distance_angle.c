@@ -83,7 +83,7 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
       if (fabs(calculate_tilt()) <= 5 / 180 * M_PI) {
         float error_tilt = pid_tilt(ideal_tilt, calculate_tilt());
       }
-      float error_dist = pid_dist(ideal_distance, get_distance());
+      float error_dist = pid_dist(ideal_distance, distance);
 
       float wl_speed_f = ideal_vl + error_tilt * (axleLength / 2) / ((float)interval / 1000); //m/s
       float wr_speed_f = ideal_vr - error_tilt * (axleLength / 2) / ((float)interval / 1000); //m/s
