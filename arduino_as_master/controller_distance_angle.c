@@ -71,7 +71,6 @@ moon_state_t controller(moon_state_t state, float dist, uint16_t pix) {
   int16_t wr_speed;
   distance = dist;
   pixy = pix;
-  // ONLY consider errors and adjust wheel speeds in driving state
   if (state == DRIVING) {
     float angular_velocity = 2 * M_PI / period;
     float ideal_vl = angular_velocity * (ideal_distance - (axleLength / 2));
@@ -119,9 +118,9 @@ moon_state_t controller(moon_state_t state, float dist, uint16_t pix) {
       printf("wl_speed: %d, wr_speed: %d, pixy: %u\n", wl_speed, wr_speed, pixy);
     }
   }
-
+  printf("0\n");
   kobukiSensorPoll(&sensors);
-
+  printf("1\n");
   switch (state) {
     case OFF: {
       // transition logic

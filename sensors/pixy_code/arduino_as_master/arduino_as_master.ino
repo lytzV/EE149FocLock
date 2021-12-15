@@ -21,8 +21,7 @@ void setup()
   Wire.begin();                // join i2c bus as master
   pixy.init();
   pixy.changeProg("block");
-  if (distanceSensor.init() == false) 
-    Serial.println("Sensor online!");
+  distanceSensor.init();
 }
 
 void loop() 
@@ -32,12 +31,13 @@ void loop()
 
   // Distance Sensor
   distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
-  while (!distanceSensor.checkForDataReady())
-  {
-    delay(1);
-  }
+//  while (!distanceSensor.checkForDataReady())
+//  {
+//    delay(1);
+//  }
   int16_t mx = pixy.ccc.blocks[0].m_x;
   byte * data1 = (byte *) &mx; // prepare data and ship
+  Serial.println(mx);
   
   int distance = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
   distanceSensor.clearInterrupt();
@@ -51,6 +51,11 @@ void loop()
   Wire.write(data1, sizeof(mx));
   Wire.write(data2, sizeof(distanceInches));
   Wire.endTransmission();    // stop transmitting
+
+
+
+  
+  Serial.println(distanceInches);
   
 
 } 

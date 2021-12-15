@@ -1,6 +1,9 @@
 #include <stdint.h>
 #include "kobukiSensorTypes.h"
+#include "kobukiSensor.h"
+#include "kobukiSensorPoll.h"
 #include <math.h>
+
 typedef enum {
   OFF,
   DRIVING,

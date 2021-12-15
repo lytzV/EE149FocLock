@@ -1,4 +1,4 @@
-// Project Geocentrics
+
 #include "app_error.h"
 #include "app_timer.h"
 #include "app_uart.h"
@@ -31,9 +31,11 @@
 
 static const nrf_drv_twis_t m_twis = NRF_DRV_TWIS_INSTANCE(1);
 
-static uint8_t rxbuff[6] = {0,0,0,0,0,0};
-float *distance = &(rxbuff[2]);
-uint16_t *pixy = &(rxbuff[0]);
+uint8_t rxbuff[6] = {0,0,0,0,0,0};
+float distance;
+uint8_t *distance_buf = (uint8_t *)&distance; 
+uint16_t pixy;
+uint8_t *pixy_buf = (uint8_t *)&pixy;
 moon_state_t state = OFF;
 
 #define I2C_DEVICE_ID 0x66
@@ -51,11 +53,18 @@ static void twis_event_handler(nrf_drv_twis_evt_t const * const p_event) {
       break;
     case TWIS_EVT_WRITE_DONE:
         printf("**********************\n");
+        distance_buf[0] = rxbuff[2];
+        distance_buf[1] = rxbuff[3];
+        distance_buf[2] = rxbuff[4];
+        distance_buf[3] = rxbuff[5];
+        
+        pixy_buf[0] = rxbuff[0];
+        pixy_buf[1] = rxbuff[1];
         // Distance sensor should only output values between 0 and 400 (inches, in a room)
-        printf("Distance: %f\n", *distance);
+        printf("Distance: %f\n", distance);
         // Pixy should only output values between 0 and 316 (horizontal position in camera)
-        printf("Pixy: %d\n", *pixy);
-//        state = controller(state, *distance, *pixy);
+        printf("Pixy: %d\n", pixy);
+        state = controller(state, distance, pixy);
       break;
 
     case TWIS_EVT_READ_ERROR:
@@ -76,6 +85,9 @@ int main(void) {
   APP_ERROR_CHECK(error_code);
   NRF_LOG_DEFAULT_BACKENDS_INIT();
   printf("Log initialized\n");
+
+  // initialize kobuki
+  kobukiInit();
   
   const nrf_drv_twis_config_t twis_config =
   {
@@ -94,5 +106,6 @@ int main(void) {
   // loop forever
   while (1) {
     __WFI();
+    nrf_delay_ms(1);
   }
 }
