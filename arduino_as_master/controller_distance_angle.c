@@ -66,12 +66,11 @@ bool adjusting = false;
 int16_t wl_speed_1 = 0;
 int16_t wr_speed_1 = 0;
 
-moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
+moon_state_t controller(moon_state_t state, float dist, uint16_t pix) {
   int16_t wl_speed;
   int16_t wr_speed;
-
-  printf("%u\n", tilt);
-
+  distance = dist;
+  pixy = pix;
   // ONLY consider errors and adjust wheel speeds in driving state
   if (state == DRIVING) {
     float angular_velocity = 2 * M_PI / period;
@@ -96,7 +95,7 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
         wr_speed_1 = ceilf(ideal_vr * 1000);
       }
       if (adjusting == true) {
-        if (158 - tilt_threshold < tilt && tilt < 158 + tilt_threshold) {
+        if (158 - tilt_threshold < pixy && pixy < 158 + tilt_threshold) {
           adjusting = false;
           wl_speed_1 = ceilf(ideal_vl * 1000);
           wr_speed_1 = ceilf(ideal_vr * 1000);
@@ -105,11 +104,11 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
           wr_speed_1 = -40;
         }
       } else {
-        if (158 - tilt_threshold < tilt && tilt < 158 + tilt_threshold) {
+        if (158 - tilt_threshold < pixy && pixy < 158 + tilt_threshold) {
           adjusting = false;
-        } else if (158 + tilt_threshold < tilt && tilt < 250) {
+        } else if (158 + tilt_threshold < pixy && pixy < 250) {
           wl_speed_1 += 1;
-        } else if (70 < tilt && tilt < 158 - tilt_threshold) {
+        } else if (70 < pixy && pixy < 158 - tilt_threshold) {
           wl_speed_1 -= 1;
         } else {
           adjusting = true;
@@ -117,7 +116,7 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
       }
       wl_speed = wl_speed_1;
       wr_speed = wr_speed_1;
-      printf("wl_speed: %d, wr_speed: %d, tilt: %u\n", wl_speed, wr_speed, tilt);
+      printf("wl_speed: %d, wr_speed: %d, pixy: %u\n", wl_speed, wr_speed, pixy);
     }
   }
 
@@ -127,11 +126,13 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
     case OFF: {
       // transition logic
       if (is_button_pressed(&sensors)) {
+        printf("OFF TO DRIVING");
         state = DRIVING;
       } else {
         // perform state-specific actions here
         //("OFF", DISPLAY_LINE_0);
         kobukiDriveDirect(0, 0);
+        printf("OFF TO OFF");
         state = OFF;
       }
       break; // each case needs to end with break!
@@ -140,14 +141,16 @@ moon_state_t controller(moon_state_t state, float distance, uint16_t tilt) {
     case DRIVING: {
       // transition logic
       if (is_button_pressed(&sensors)) {
+        printf("DRIVING TO OFF");
         state = OFF;
       } else {
         // perform state-specific actions here
         //display_write("DRIVING", DISPLAY_LINE_0);
         char buf[16];
-        snprintf(buf, 16, "%d", tilt);
+        //snprintf(buf, 16, "%d", pixy);
         //display_write(buf, DISPLAY_LINE_1);
         kobukiDriveDirect(wl_speed, wr_speed);
+        printf("DRIVING TO DRIVING");
         state = DRIVING;
       }
       break; // each case needs to end with break!
